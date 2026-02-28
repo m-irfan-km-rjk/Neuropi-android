@@ -19,10 +19,10 @@ export default function EmotionSelectionScreen() {
         <View style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
-                <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-                    <Text style={styles.backButtonText}>{'< Back'}</Text>
+                <TouchableOpacity style={styles.backButton} onPress={() => router.push('/') as any}>
+                    <Text style={styles.backButtonText}>🏠 Home</Text>
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Emotion Exercise - Choose an Emotion</Text>
+                <Text style={styles.headerTitle}>Emotion Exercise</Text>
             </View>
 
             {/* Instructions */}

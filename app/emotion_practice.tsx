@@ -1,55 +1,103 @@
-import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useTensorflowModel } from 'react-native-fast-tflite';
+import { Camera, useCameraDevice, useCameraPermission, useFrameProcessor } from 'react-native-vision-camera';
+import { Worklets } from 'react-native-worklets-core';
+import { useResizePlugin } from 'vision-camera-resize-plugin';
 
 export default function EmotionPracticeScreen() {
     const router = useRouter();
     const { emotion } = useLocalSearchParams();
-    const [permission, requestPermission] = useCameraPermissions();
+    const { hasPermission, requestPermission } = useCameraPermission();
+    const device = useCameraDevice('front');
 
     const [feedback, setFeedback] = useState('Position your face in the camera');
     const [feedbackColor, setFeedbackColor] = useState('#666666');
     const [borderColor, setBorderColor] = useState('transparent');
     const [isSuccess, setIsSuccess] = useState(false);
-    const [cameraReady, setCameraReady] = useState(false);
+
+    // Load the model
+    const plugin = useTensorflowModel(require('../assets/models/mini_xception.tflite'));
+    const model = plugin.state === 'loaded' ? plugin.model : null;
+    const { resize } = useResizePlugin();
+
+    const EMOTIONS = ['Angry', 'Disgust', 'Fear', 'Happy', 'Neutral', 'Sad', 'Surprise'];
 
     useEffect(() => {
-        if (!permission?.granted) {
+        if (!hasPermission) {
             requestPermission();
         }
-    }, [permission]);
+    }, [hasPermission]);
 
-    // Simulate emotion detection logic
-    useEffect(() => {
-        if (cameraReady && permission?.granted && !isSuccess) {
-            setFeedback('Camera ready! Show the emotion.');
-            setFeedbackColor('#77DD77');
-            setBorderColor('red'); // Initially red
+    // Update UI safely on JS Thread
+    const setEmotionUI = Worklets.createRunOnJS((detectedEmotion: string, confidence: number) => {
+        if (isSuccess) return;
 
-            // A mock interval to simulate AI checking frames
-            const interval = setInterval(() => {
-                // Random chance to succeed for demonstration 
-                // In a real app, this is where you'd call your ML model
-                const randomChance = Math.random();
-                if (randomChance > 0.8) {
-                    setIsSuccess(true);
-                    setBorderColor('green');
-                    setFeedback(`Perfect! You showed ${emotion}!`);
-                    setFeedbackColor('#77DD77');
-                    clearInterval(interval);
-                } else {
-                    setFeedback(`Detected: Neutral (Try ${emotion})`);
-                    setFeedbackColor('#FF6961');
-                }
-            }, 2000);
-
-            return () => clearInterval(interval);
+        if (detectedEmotion.toLowerCase() === emotion?.toString().toLowerCase()) {
+            if (confidence > 0.6) {
+                setIsSuccess(true);
+                setBorderColor('green');
+                setFeedback(`Perfect! You showed ${emotion}! (${Math.round(confidence * 100)}%)`);
+                setFeedbackColor('#77DD77');
+            }
+        } else {
+            setBorderColor('red');
+            setFeedback(`Detected: ${detectedEmotion} (Try ${emotion})`);
+            setFeedbackColor('#FF6961');
         }
-    }, [cameraReady, permission, isSuccess, emotion]);
+    });
 
-    if (!permission) {
-        return <View style={styles.container}><Text>Requesting permission...</Text></View>;
+    const frameProcessor = useFrameProcessor((frame) => {
+        'worklet';
+        if (model == null) return;
+
+        const size = 48; // Required by mini_xception
+
+        // Resize the frame using the native Resize Plugin
+        const resized = resize(frame, {
+            scale: { width: size, height: size },
+            pixelFormat: 'rgb',
+            dataType: 'uint8',
+        });
+
+        // The mini-xception tflite model expects Grayscale inputs of Float32 or UInt8 [1, 48, 48, 1].
+        // Convert RGB to Grayscale
+        const grayBuffer = new Uint8Array(size * size);
+        for (let i = 0; i < size * size; i++) {
+            const r = resized[i * 3];
+            const g = resized[i * 3 + 1];
+            const b = resized[i * 3 + 2];
+            grayBuffer[i] = Math.max(0, Math.min(255, Math.round(r * 0.299 + g * 0.587 + b * 0.114)));
+        }
+
+        // Run TFLite Prediction
+        const outputs = model.runSync([grayBuffer]);
+
+        // Output shape is [1, 7] - prob array for 7 emotions
+        if (outputs && outputs[0]) {
+            const outputArray = outputs[0] as Float32Array;
+            let maxIdx = 0;
+            let maxVal = outputArray[0];
+
+            for (let i = 1; i < EMOTIONS.length; i++) {
+                if (outputArray[i] > maxVal) {
+                    maxVal = outputArray[i];
+                    maxIdx = i;
+                }
+            }
+
+            const detected = EMOTIONS[maxIdx];
+            setEmotionUI(detected, maxVal);
+        }
+    }, [model]);
+
+    if (!hasPermission || device == null) {
+        return (
+            <View style={styles.container}>
+                <Text style={styles.headerTitle}>Need camera access.</Text>
+            </View>
+        );
     }
 
     return (
@@ -64,27 +112,26 @@ export default function EmotionPracticeScreen() {
 
             {/* Feedback Label */}
             <Text style={[styles.feedbackLabel, { color: feedbackColor }]}>
-                {feedback}
+                {plugin.state !== 'loaded' ? 'Loading AI Model...' : feedback}
             </Text>
 
             {/* Camera Feed with Border */}
             <View style={[styles.cameraContainer, { borderColor: borderColor, borderWidth: 10 }]}>
-                {permission.granted ? (
-                    <CameraView
-                        style={StyleSheet.absoluteFillObject}
-                        facing="front"
-                        onCameraReady={() => setCameraReady(true)}
-                    />
-                ) : (
-                    <Text style={styles.noCameraText}>No access to camera</Text>
-                )}
+                <Camera
+                    style={StyleSheet.absoluteFillObject}
+                    device={device}
+                    isActive={!isSuccess} // Pause camera once successful
+                    frameProcessor={frameProcessor}
+                    fps={15} // Keep FPS manageable for processing
+                />
             </View>
 
             {/* Instructions Box */}
             <View style={styles.instructionsBox}>
                 <Text style={styles.instructionsTitle}>📸 Instructions</Text>
                 <Text style={styles.instructionsText}>
-                    Red border = Wrong emotion | Green border = Correct emotion!
+                    Look into the camera! Remember: AI expects a center-aligned face.
+                    {'\n'}Red border = Wrong emotion | Green border = Correct emotion!
                 </Text>
             </View>
 
@@ -113,7 +160,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         height: 80,
-        marginTop: 20, // rough safearea
+        marginTop: 20,
     },
     backButton: {
         width: 100,
@@ -145,10 +192,6 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
         justifyContent: 'center',
         alignItems: 'center',
-    },
-    noCameraText: {
-        color: 'rgba(255, 255, 255, 0.5)',
-        fontSize: 20,
     },
     instructionsBox: {
         height: 100,

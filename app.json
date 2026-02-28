@@ -3,7 +3,7 @@
     "name": "neuropi",
     "slug": "neuropi",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "landscape",
     "icon": "./assets/images/icon.png",
     "scheme": "neuropi",
     "userInterfaceStyle": "automatic",
@@ -40,11 +40,13 @@
         }
       ],
       [
-        "expo-camera",
+        "react-native-vision-camera",
         {
-          "cameraPermission": "Allow Neuropi to access your camera."
+          "cameraPermissionText": "Allow Neuropi to access your camera.",
+          "enableCodeScanner": false
         }
-      ]
+      ],
+      "react-native-fast-tflite"
     ],
     "experiments": {
       "typedRoutes": true,
