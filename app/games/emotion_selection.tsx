@@ -36,7 +36,7 @@ export default function EmotionSelectionScreen() {
                     <TouchableOpacity
                         key={emotion.name}
                         style={[styles.card, { backgroundColor: emotion.color }]}
-                        onPress={() => router.push({ pathname: '/emotion_practice', params: { emotion: emotion.name } })}
+                        onPress={() => router.push(`/games/emotion_practice?emotion=${emotion.name}` as any)}
                         activeOpacity={0.8}
                     >
                         <Text style={styles.cardEmoji}>{emotion.emoji}</Text>

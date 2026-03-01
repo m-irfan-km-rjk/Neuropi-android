@@ -18,7 +18,7 @@ export default function EmotionPracticeScreen() {
     const [isSuccess, setIsSuccess] = useState(false);
 
     // Load the model
-    const plugin = useTensorflowModel(require('../assets/models/mini_xception.tflite'));
+    const plugin = useTensorflowModel(require('../../assets/models/mini_xception.tflite'));
     const model = plugin.state === 'loaded' ? plugin.model : null;
     const { resize } = useResizePlugin();
 

@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const SHAPES = [
     { icon: '🔴', color: '#FF8A80' },
@@ -23,6 +23,7 @@ export default function MemoryMatchScreen() {
     const [infoText, setInfoText] = useState<string>("Get ready...");
     const [level, setLevel] = useState<number>(1);
     const [numPairs, setNumPairs] = useState<number>(3); // Level 1 is 3 pairs
+    const [consecutiveMisses, setConsecutiveMisses] = useState<number>(0);
 
     // 1: 3x2 (3 pairs), 2: 4x3 (6 pairs), 3: 4x4 (8 pairs)
     const cols = level === 1 ? 3 : 4;
@@ -46,6 +47,7 @@ export default function MemoryMatchScreen() {
         setCards(deck.map((item, id) => ({ id, ...item, isFlipped: true, isMatched: false, isWrong: false })));
         setFlippedIndices([]);
         setMatchedPairs(0);
+        setConsecutiveMisses(0);
         setIsLocked(true);
         setInfoText("Memorize the tiles!");
 
@@ -79,6 +81,12 @@ export default function MemoryMatchScreen() {
                     c[secondIdx].isMatched = true;
                     setCards(c);
                     setMatchedPairs(prev => prev + 1);
+                    setConsecutiveMisses(0);
+
+                    // Clear hints
+                    c.forEach(card => card.isHint = false);
+                    setCards(c);
+
                     setFlippedIndices([]);
                     setIsLocked(false);
                     setInfoText("Great match!");
@@ -98,11 +106,28 @@ export default function MemoryMatchScreen() {
                         cx[secondIdx].isFlipped = false;
                         cx[firstIdx].isWrong = false;
                         cx[secondIdx].isWrong = false;
+
+                        // Check for hint
+                        const currentMisses = consecutiveMisses + 1;
+                        if (currentMisses >= 3 && matchedPairs < numPairs) {
+                            // Find an unrevealed pair
+                            const unrevealed = cx.filter(card => !card.isMatched && !card.isFlipped);
+                            if (unrevealed.length >= 2) {
+                                const targetIcon = unrevealed[0].icon;
+                                const pairToHint = cx.filter(card => !card.isMatched && !card.isFlipped && card.icon === targetIcon);
+                                if (pairToHint.length >= 2) {
+                                    cx[pairToHint[0].id].isHint = true;
+                                    cx[pairToHint[1].id].isHint = true;
+                                }
+                            }
+                        }
+
                         setCards(cx);
                         setFlippedIndices([]);
                         setIsLocked(false);
                     }, 1000);
                 }, 500);
+                setConsecutiveMisses(prev => prev + 1);
             }
         }
     };
@@ -114,7 +139,7 @@ export default function MemoryMatchScreen() {
     }, [matchedPairs]);
 
     return (
-        <View style={styles.container}>
+        <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
             {/* Top Bar */}
             <View style={styles.titleBar}>
                 <TouchableOpacity style={styles.homeButton} onPress={() => router.push('/games' as any)}>
@@ -152,7 +177,7 @@ export default function MemoryMatchScreen() {
             {/* Board */}
             <View style={styles.boardWrap}>
                 <View style={styles.boardInner}>
-                    <View style={[styles.grid, { flexWrap: 'wrap', width: cols * 120, height: rows * 120 }]}>
+                    <View style={[styles.grid, { flexWrap: 'wrap', width: cols * 90, height: rows * 90 }]}>
                         {cards.map((card, index) => (
                             <TouchableOpacity
                                 key={index}
@@ -160,9 +185,10 @@ export default function MemoryMatchScreen() {
                                 style={[
                                     styles.cardStyle,
                                     {
-                                        width: 100, height: 100,
+                                        width: 80, height: 80,
                                         backgroundColor: card.isFlipped ? '#FFF' : '#C8E6C9',
-                                        borderColor: card.isWrong ? '#E53935' : (card.isFlipped ? '#E0E0E0' : '#A5D6A7')
+                                        borderColor: card.isWrong ? '#E53935' : (card.isHint ? '#FFD700' : (card.isFlipped ? '#E0E0E0' : '#A5D6A7')),
+                                        borderWidth: card.isHint || card.isWrong ? 4 : 2,
                                     }
                                 ]}
                                 onPress={() => handleCardPress(index)}
@@ -180,7 +206,7 @@ export default function MemoryMatchScreen() {
 
             {/* Info Label */}
             <Text style={styles.infoLabel}>{infoText}</Text>
-        </View>
+        </ScrollView>
     );
 }
 
@@ -188,7 +214,11 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#EAF7F0',
+    },
+    scrollContent: {
         padding: 20,
+        paddingBottom: 40,
+        minHeight: '100%',
     },
     titleBar: {
         flexDirection: 'row',
@@ -271,7 +301,6 @@ const styles = StyleSheet.create({
     },
     grid: {
         flexDirection: 'row',
-        gap: 20,
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -284,13 +313,13 @@ const styles = StyleSheet.create({
         shadowColor: '#000',
         shadowOpacity: 0.1,
         shadowRadius: 5,
-        margin: 10,
+        margin: 5,
     },
     cardIcon: {
-        fontSize: 50,
+        fontSize: 40,
     },
     cardQuestionMark: {
-        fontSize: 40,
+        fontSize: 32,
         fontWeight: 'bold',
         color: 'rgba(255,255,255,0.8)',
     },
