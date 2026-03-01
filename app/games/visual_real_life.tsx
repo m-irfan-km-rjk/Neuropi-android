@@ -64,6 +64,7 @@ const DOMAINS = {
 const domainLabels = ["Counting", "Comparison", "Daily Logic", "Money", "Safety"];
 const { width, height } = Dimensions.get('window');
 const isTablet = width > 600;
+const sizeBase = Math.min(width, height);
 
 type TaskType = {
     id: number;
@@ -125,8 +126,16 @@ export default function VisualRealLife() {
             data = { type: "drag", domain: qDomain, instruction: `Pick ${qty} ${item.icon}`, target_qty: qty, item };
         } else if (qDomain === "comparison") {
             const isMore = Math.random() > 0.5;
-            const opt1 = Math.floor(Math.random() * 4) + 1;
-            const opt2 = Math.floor(Math.random() * 4) + 5;
+            let opt1 = Math.floor(Math.random() * 5) + 1; // 1 to 5
+            let opt2 = Math.floor(Math.random() * 5) + 1; // 1 to 5
+            while (opt1 === opt2) {
+                opt2 = Math.floor(Math.random() * 5) + 1;
+            }
+            if (isMore && opt1 > opt2) {
+                const temp = opt1; opt1 = opt2; opt2 = temp;
+            } else if (!isMore && opt1 < opt2) {
+                const temp = opt1; opt1 = opt2; opt2 = temp;
+            }
             const item = DOMAINS.comparison.items[Math.floor(Math.random() * DOMAINS.comparison.items.length)];
             const opts = [item.icon.repeat(opt1), item.icon.repeat(opt2)];
             const correct = isMore ? opts[1] : opts[0];
@@ -185,20 +194,34 @@ export default function VisualRealLife() {
                 }
             }
 
-            // Positions
-            const startX = width * 0.1;
-            const spaceX = width * 0.25;
-            const startY = height * 0.7;
-            const spaceY = height * 0.2;
-            const cols = 2; // For money or counting > 6 it might need 3, simplified to 2 for now
+            // Positions inside Left Tray Container
+            const cols = 2;
+            const trayW = width * 0.45;
+            const trayH = height * 0.7 * 0.9;
+            const trayTop = height * 0.7 * 0.05;
+            const trayLeft = width * 0.02;
+
+            let approximateW = isTablet ? 120 : 80;
+            let approximateH = isTablet ? 120 : 80;
+            if (data.domain === "money") { approximateW = isTablet ? 150 : 100; approximateH = isTablet ? 100 : 70; }
+            if (data.domain === "counting" || data.domain === "daily") { approximateW = isTablet ? 80 : 50; approximateH = isTablet ? 80 : 50; }
+
+            const startY = trayTop + (isTablet ? 50 : 35); // Title offset
+            const stepX = trayW / cols;
+            const startX = trayLeft + (stepX - approximateW) / 2;
+
+            const rows = Math.ceil(itemsToGen.length / cols);
+            // Calculate vertical spacing so even 6 rows never overflow the container bounds
+            const maxUsableHeight = trayH - (isTablet ? 50 : 35) - approximateH;
+            const stepY = rows <= 1 ? 0 : Math.min(approximateH + 15, maxUsableHeight / (rows - 1));
 
             itemsToGen.forEach((it, i) => {
                 const c = i % cols;
                 const r = Math.floor(i / cols);
-                const pos = { x: startX + (c * spaceX), y: startY - (r * spaceY) };
+                const pos = { x: startX + (c * stepX), y: startY + (r * stepY) };
 
                 newTasks.push({
-                    id: i,
+                    id: Math.random() + i, // Use universally unique ID to prevent React recycling bugs across levels
                     text: it.text,
                     icon: it.icon,
                     image: it.image,
@@ -214,7 +237,7 @@ export default function VisualRealLife() {
             let shuffled = [...data.options].sort(() => 0.5 - Math.random());
             shuffled.forEach((opt, i) => {
                 newTasks.push({
-                    id: i,
+                    id: Math.random() + i, // Universally unique ID
                     text: opt,
                     icon: opt,
                     image: null,
@@ -456,6 +479,9 @@ export default function VisualRealLife() {
                     </View>
                 ) : (
                     <>
+                        <View style={styles.sourceZoneBase}>
+                            <Text style={styles.dropZoneTitle}>Available Items</Text>
+                        </View>
                         <View
                             style={styles.dropZoneBase}
                             onLayout={(e) => {
@@ -473,7 +499,7 @@ export default function VisualRealLife() {
                             </Text>
                             <View style={styles.dropZoneInner}>
                                 {dropZoneItems.map((item, idx) => (
-                                    <View key={item.id} style={styles.inZoneItem}>
+                                    <View key={`dz-${item.id}-${idx}`} style={styles.inZoneItem}>
                                         {item.image ? <Image source={item.image} style={styles.zoneImg} /> : <Text style={styles.zoneIcon}>{item.icon}</Text>}
                                         {!!item.text && item.text !== item.icon && <Text style={styles.zoneText}>{item.text}</Text>}
                                     </View>
@@ -498,6 +524,12 @@ export default function VisualRealLife() {
 }
 
 function DraggableItem({ task, onDrop, isMoney, isCount }: { task: TaskType, onDrop: (task: any, gesture: any) => void, isMoney: boolean, isCount: boolean }) {
+    const onDropRef = useRef(onDrop);
+
+    useEffect(() => {
+        onDropRef.current = onDrop;
+    }, [onDrop]);
+
     const panResponder = useRef(
         PanResponder.create({
             onStartShouldSetPanResponder: () => true,
@@ -511,17 +543,17 @@ function DraggableItem({ task, onDrop, isMoney, isCount }: { task: TaskType, onD
             onPanResponderMove: Animated.event([null, { dx: task.pan.x, dy: task.pan.y }], { useNativeDriver: false }),
             onPanResponderRelease: (e, gesture) => {
                 task.pan.flattenOffset();
-                onDrop(task, gesture);
+                onDropRef.current(task, gesture);
             }
         })
     ).current;
 
     const bgColor = task.glow.interpolate({ inputRange: [0, 1], outputRange: ['#FFF9C4', '#F1948A'] });
 
-    let w = width * 0.18;
-    let h = width * 0.18;
-    if (isMoney) { w = width * 0.22; h = width * 0.14; }
-    if (isCount) { w = width * 0.14; h = width * 0.14; }
+    let w = isTablet ? 120 : 80;
+    let h = isTablet ? 120 : 80;
+    if (isMoney) { w = isTablet ? 150 : 100; h = isTablet ? 100 : 70; }
+    if (isCount) { w = isTablet ? 80 : 50; h = isTablet ? 80 : 50; } // Matches inZoneItem dimensions
 
     return (
         <Animated.View
@@ -558,6 +590,19 @@ const styles = StyleSheet.create({
     feedbackSection: { height: '15%', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 10 },
     feedbackText: { fontSize: isTablet ? 36 : 22, fontWeight: 'bold', textAlign: 'center' },
 
+    sourceZoneBase: {
+        position: 'absolute',
+        left: '2%',
+        top: '5%',
+        width: '45%',
+        height: '90%',
+        backgroundColor: '#E8F6F3',
+        borderRadius: 15,
+        borderWidth: 2,
+        borderColor: '#A2D9CE',
+        borderStyle: 'dashed',
+        padding: 5
+    },
     dropZoneBase: {
         position: 'absolute',
         right: '2%',
@@ -590,13 +635,13 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
-    taskImage: { width: '100%', height: '60%', resizeMode: 'contain' },
-    taskIcon: { fontSize: isTablet ? 60 : 36 },
-    taskText: { fontSize: isTablet ? 16 : 10, fontWeight: 'bold', color: '#333', marginTop: 2, textAlign: 'center', flexShrink: 1 },
+    taskImage: { width: '80%', height: '80%', resizeMode: 'contain' },
+    taskIcon: { fontSize: isTablet ? 40 : 24 }, // Matches zoneIcon exact sizing
+    taskText: { fontSize: isTablet ? 12 : 8, fontWeight: 'bold', color: '#333', marginTop: 2, textAlign: 'center', flexShrink: 1 },
 
-    tapLayout: { flex: 1, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: 10, padding: 10 },
-    tapBox: { width: isTablet ? 300 : '45%', height: isTablet ? 200 : 120, borderRadius: 15, borderWidth: 2, borderColor: '#5DADE2', alignItems: 'center', justifyContent: 'center' },
+    tapLayout: { flex: 1, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: 15, padding: 10 },
+    tapBox: { width: isTablet ? 250 : '40%', height: isTablet ? 150 : 80, borderRadius: 15, borderWidth: 2, borderColor: '#5DADE2', alignItems: 'center', justifyContent: 'center' },
     tapTouch: { width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' },
-    tapBoxText: { fontSize: isTablet ? 80 : 40, textAlign: 'center' }
+    tapBoxText: { fontSize: isTablet ? 40 : 20, textAlign: 'center', fontWeight: 'bold', color: '#333' }
 
 });

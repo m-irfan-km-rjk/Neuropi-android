@@ -52,9 +52,10 @@ const SCENARIOS = [
 
 const { width, height } = Dimensions.get('window');
 const isTablet = width > 600;
-const SLOT_SIZE = width * 0.2;
-const TASK_WIDTH = width * 0.22;
-const TASK_HEIGHT = width * 0.22;
+const sizeBase = Math.min(width, height);
+const SLOT_SIZE = isTablet ? sizeBase * 0.22 : sizeBase * 0.26;
+const TASK_WIDTH = isTablet ? sizeBase * 0.24 : sizeBase * 0.28;
+const TASK_HEIGHT = isTablet ? sizeBase * 0.24 : sizeBase * 0.28;
 
 export default function RoutineBuilder() {
     const router = useRouter();
@@ -62,7 +63,7 @@ export default function RoutineBuilder() {
     const [level, setLevel] = useState<number | null>(null);
     const [currentScenarioIdx, setCurrentScenarioIdx] = useState(0);
     const [currentStepIdx, setCurrentStepIdx] = useState(0);
-    const [failedAttempts, setFailedAttempts] = useState(0);
+    const failedAttemptsRef = useRef(0);
     const [shuffledTasks, setShuffledTasks] = useState<any[]>([]);
     const [slots, setSlots] = useState<any[]>([null, null, null, null]);
     const [feedback, setFeedback] = useState("");
@@ -88,12 +89,16 @@ export default function RoutineBuilder() {
         const scenario = SCENARIOS[currentScenarioIdx];
         const steps = [...scenario.steps].sort(() => 0.5 - Math.random());
 
-        // Initial positions for tasks
+        // Calculate positions for the tray area
+        const trayY = height * 0.58; // Shifted slightly lower to prevent overlapping the prompt text
+        const spacingX = width * 0.22; // Tighter spacing to ensure they fit horizontally
+        const startX = width * 0.08;
+
         const positions = [
-            { x: width * 0.15, y: height * 0.2 },
-            { x: width * 0.65, y: height * 0.2 },
-            { x: width * 0.15, y: height * 0.5 },
-            { x: width * 0.65, y: height * 0.5 },
+            { x: startX, y: trayY },
+            { x: startX + spacingX, y: trayY },
+            { x: startX + spacingX * 2, y: trayY },
+            { x: startX + spacingX * 3, y: trayY },
         ].sort(() => 0.5 - Math.random());
 
         const tasksWithPos = steps.map((s, i) => ({
@@ -106,7 +111,7 @@ export default function RoutineBuilder() {
         setShuffledTasks(tasksWithPos);
         setSlots([null, null, null, null]);
         setCurrentStepIdx(0);
-        setFailedAttempts(0);
+        failedAttemptsRef.current = 0;
         setFeedback("");
     };
 
@@ -161,7 +166,7 @@ export default function RoutineBuilder() {
         setShuffledTasks(prev => prev.filter(t => t.id !== task.id));
         setFeedback("✔ Correct!");
         setFeedbackColor("#27AE60");
-        setFailedAttempts(0);
+        failedAttemptsRef.current = 0;
 
         if (currentStepIdx + 1 === 4) {
             setFeedback("🎉 Scenario Complete");
@@ -182,24 +187,49 @@ export default function RoutineBuilder() {
 
         setFeedback("❌ Try Again");
         setFeedbackColor("#E74C3C");
-        setFailedAttempts(prev => prev + 1);
+        failedAttemptsRef.current += 1;
 
         if (level === 2) {
-            // Level 2 resets
+            // Level 2 resets the board smoothly without re-shuffling
             setTimeout(() => {
-                loadScenario();
-                if (failedAttempts + 1 >= 3) {
+                setSlots(prevSlots => {
+                    const itemsToReturn = prevSlots.filter(s => s !== null);
+                    setShuffledTasks(prevTasks => {
+                        const combined = [...prevTasks, ...itemsToReturn];
+                        // Animate returning items to their initial tray pos
+                        itemsToReturn.forEach(item => {
+                            Animated.spring(item.pan, {
+                                toValue: item.initialPos,
+                                useNativeDriver: false
+                            }).start();
+                        });
+                        return combined;
+                    });
+                    return [null, null, null, null];
+                });
+                setCurrentStepIdx(0);
+
+                if (failedAttemptsRef.current >= 3) {
+                    setFeedback("Watch the correct order 👀");
+                    setFeedbackColor("#F39C12");
                     playLevel2Hint();
+                    failedAttemptsRef.current = 0;
+                } else {
+                    setFeedback("Sequence broken. Start over!");
+                    setFeedbackColor("#E74C3C");
                 }
             }, 1000);
         } else {
             // Level 1 highlights target after 3 fails
-            if (failedAttempts + 1 >= 3) {
+            if (failedAttemptsRef.current >= 3) {
                 const targetText = SCENARIOS[currentScenarioIdx].steps[currentStepIdx].text;
-                const targetTask = shuffledTasks.find(t => t.text === targetText);
-                if (targetTask) {
-                    glowTask(targetTask, 1, 0, 0); // Red pulse
-                }
+                setShuffledTasks(prevTasks => {
+                    const targetTask = prevTasks.find(t => t.text === targetText);
+                    if (targetTask) {
+                        glowTask(targetTask, 1, 0, 0); // Red pulse
+                    }
+                    return prevTasks;
+                });
             }
         }
     };
@@ -257,37 +287,42 @@ export default function RoutineBuilder() {
                 )}
             </View>
 
-            <View style={styles.middleSection}>
-                {shuffledTasks.map((task) => (
-                    <DraggableItem key={task.id} task={task} onDrop={handleDrop} />
+            <View style={styles.sequenceSection}>
+                {[0, 1, 2, 3].map((i) => (
+                    <React.Fragment key={i}>
+                        <View
+                            style={[styles.slot, { backgroundColor: slots[i] ? '#A5D6A7' : '#E0E0E0' }]}
+                            ref={el => { slotRefs.current[i] = el; }}
+                            onLayout={() => {
+                                if (slotRefs.current[i]) {
+                                    slotRefs.current[i].measureInWindow((x: number, y: number, w: number, h: number) => {
+                                        slotLayoutsRef.current[i] = { x, y, width: w, height: h };
+                                    });
+                                }
+                            }}
+                        >
+                            {slots[i] ? (
+                                <>
+                                    <Image source={slots[i].icon} style={styles.slotImage} />
+                                    <Text style={styles.slotText}>{slots[i].text} ✔</Text>
+                                </>
+                            ) : (
+                                <Text style={styles.slotPlaceholder}>Step {i + 1}</Text>
+                            )}
+                        </View>
+                        {i < 3 && <Text style={styles.arrowText}>➔</Text>}
+                    </React.Fragment>
                 ))}
             </View>
 
-            <View style={styles.dropSection}>
-                {[0, 1, 2, 3].map((i) => (
-                    <View
-                        key={i}
-                        style={[styles.slot, { backgroundColor: slots[i] ? '#A5D6A7' : '#E0E0E0' }]}
-                        ref={el => { slotRefs.current[i] = el; }}
-                        onLayout={() => {
-                            if (slotRefs.current[i]) {
-                                slotRefs.current[i].measureInWindow((x: number, y: number, w: number, h: number) => {
-                                    slotLayoutsRef.current[i] = { x, y, width: w, height: h };
-                                });
-                            }
-                        }}
-                    >
-                        {slots[i] ? (
-                            <>
-                                <Image source={slots[i].icon} style={styles.slotImage} />
-                                <Text style={styles.slotText}>{slots[i].text} ✔</Text>
-                            </>
-                        ) : (
-                            <Text style={styles.slotPlaceholder}>Step {i + 1}</Text>
-                        )}
-                    </View>
-                ))}
+            <View style={styles.traySection}>
+                <Text style={styles.trayTitle}>Available Tasks (Drag to sequence):</Text>
             </View>
+
+            {/* Draggables must be rendered after all static sections so they float on top */}
+            {shuffledTasks.map((task) => (
+                <DraggableItem key={task.id} task={task} onDrop={handleDrop} />
+            ))}
 
             <View style={styles.feedbackSection}>
                 <Text style={[styles.feedbackText, { color: feedbackColor }]}>{feedback}</Text>
@@ -298,6 +333,12 @@ export default function RoutineBuilder() {
 
 
 function DraggableItem({ task, onDrop }: { task: any, onDrop: (task: any, gesture: any) => void }) {
+    const onDropRef = useRef(onDrop);
+
+    useEffect(() => {
+        onDropRef.current = onDrop;
+    }, [onDrop]);
+
     const panResponder = useRef(
         PanResponder.create({
             onStartShouldSetPanResponder: () => true,
@@ -311,7 +352,7 @@ function DraggableItem({ task, onDrop }: { task: any, onDrop: (task: any, gestur
             onPanResponderMove: Animated.event([null, { dx: task.pan.x, dy: task.pan.y }], { useNativeDriver: false }),
             onPanResponderRelease: (e, gesture) => {
                 task.pan.flattenOffset();
-                onDrop(task, gesture);
+                onDropRef.current(task, gesture);
             }
         })
     ).current;
@@ -352,13 +393,15 @@ const styles = StyleSheet.create({
     homeButtonText: { fontSize: isTablet ? 20 : 16, fontWeight: 'bold', color: '#2E7D32' },
     scenarioLabel: { fontSize: isTablet ? 28 : 18, fontWeight: 'bold', color: '#2C3E50', flexShrink: 1 },
 
-    middleSection: { height: '50%', position: 'relative' },
+    sequenceSection: { height: '30%', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 5 },
+    arrowText: { fontSize: isTablet ? 24 : 16, color: '#7F8C8D', marginHorizontal: 2 },
+    slot: { width: SLOT_SIZE, height: SLOT_SIZE, borderRadius: 15, justifyContent: 'center', alignItems: 'center', padding: 5, borderWidth: 2, borderColor: '#BDBDBD', borderStyle: 'dashed' },
+    slotPlaceholder: { fontSize: isTablet ? 18 : 12, fontWeight: 'bold', color: '#7F8C8D', textAlign: 'center' },
+    slotImage: { width: '100%', height: '55%', resizeMode: 'contain' },
+    slotText: { fontSize: isTablet ? 12 : 9, fontWeight: 'bold', color: '#27AE60', marginTop: 5, textAlign: 'center' },
 
-    dropSection: { height: '25%', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 10 },
-    slot: { width: SLOT_SIZE, height: SLOT_SIZE, borderRadius: 15, justifyContent: 'center', alignItems: 'center', padding: 5 },
-    slotPlaceholder: { fontSize: isTablet ? 24 : 14, fontWeight: 'bold', color: '#7F8C8D' },
-    slotImage: { width: '100%', height: '60%', resizeMode: 'contain' },
-    slotText: { fontSize: isTablet ? 16 : 10, fontWeight: 'bold', color: '#27AE60', marginTop: 5, textAlign: 'center' },
+    traySection: { height: '45%', backgroundColor: '#D5F5E3', marginHorizontal: 15, borderRadius: 20, paddingTop: 15, alignItems: 'center', borderWidth: 2, borderColor: '#A9DFBF' },
+    trayTitle: { fontSize: isTablet ? 20 : 14, fontWeight: 'bold', color: '#2C3E50' },
 
     feedbackSection: { height: '10%', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 10 },
     feedbackText: { fontSize: isTablet ? 32 : 20, fontWeight: 'bold', textAlign: 'center' },
@@ -369,14 +412,16 @@ const styles = StyleSheet.create({
         height: TASK_HEIGHT,
         borderRadius: 15,
         padding: 5,
-        elevation: 5,
+        elevation: 8,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 5,
         alignItems: 'center',
         justifyContent: 'center',
+        borderWidth: 1,
+        borderColor: '#E0E0E0'
     },
-    taskImage: { width: '100%', height: '60%', resizeMode: 'contain' },
-    taskText: { fontSize: isTablet ? 16 : 10, fontWeight: 'bold', color: '#333', marginTop: 2, textAlign: 'center' }
+    taskImage: { width: '100%', height: '55%', resizeMode: 'contain' },
+    taskText: { fontSize: isTablet ? 12 : 9, fontWeight: 'bold', color: '#333', marginTop: 2, textAlign: 'center' }
 });
