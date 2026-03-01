@@ -37,7 +37,7 @@ const STAGES = {
 
 const { width, height } = Dimensions.get('window');
 const isTablet = width > 600;
-const BUBBLE_SIZE = isTablet ? 160 : width * 0.35;
+const BUBBLE_SIZE = isTablet ? 140 : Math.min(width, height) * 0.28;
 
 type BubbleType = {
     id: number;
@@ -93,11 +93,16 @@ export default function SmartBubblepop() {
         let shuffledOptions = [...question.options].map((opt, i) => ({ opt, originalIndex: i }))
             .sort(() => 0.5 - Math.random());
 
+        const row1Y = isTablet ? 30 : 10;
+        const row2Y = isTablet ? 30 + BUBBLE_SIZE + 40 : 10 + BUBBLE_SIZE + 15;
+        const col1X = width * 0.15;
+        const col2X = width * 0.55;
+
         const positions = [
-            { x: width * 0.1, y: height * 0.3 - (BUBBLE_SIZE / 2) },
-            { x: width * 0.5, y: height * 0.3 - (BUBBLE_SIZE / 2) },
-            { x: width * 0.1, y: height * 0.55 - (BUBBLE_SIZE / 2) },
-            { x: width * 0.5, y: height * 0.55 - (BUBBLE_SIZE / 2) }
+            { x: col1X, y: row1Y },
+            { x: col2X, y: row1Y },
+            { x: col1X, y: row2Y },
+            { x: col2X, y: row2Y }
         ].sort(() => 0.5 - Math.random());
 
         const newBubbles: BubbleType[] = shuffledOptions.map((item, i) => {
@@ -231,7 +236,7 @@ export default function SmartBubblepop() {
                         ]}
                     >
                         <TouchableOpacity activeOpacity={0.8} style={styles.bubbleTouchable} onPress={() => handleBubblePress(b)}>
-                            <Text style={[styles.bubbleText, b.isBig && { fontSize: isTablet ? 80 : 50 }]}>{b.text}</Text>
+                            <Text style={[styles.bubbleText, b.isBig && { fontSize: isTablet ? 60 : 40 }]}>{b.text}</Text>
                         </TouchableOpacity>
                     </Animated.View>
                 ))}
@@ -285,7 +290,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     bubbleText: {
-        fontSize: isTablet ? 40 : 28,
+        fontSize: isTablet ? 40 : 24,
         color: '#2C3E50',
         textAlign: 'center'
     },
