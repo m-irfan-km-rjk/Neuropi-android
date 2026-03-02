@@ -37,7 +37,7 @@ const STAGES = {
 
 const { width, height } = Dimensions.get('window');
 const isTablet = width > 600;
-const BUBBLE_SIZE = isTablet ? 140 : Math.min(width, height) * 0.28;
+const BUBBLE_SIZE = isTablet ? 120 : Math.min(width, height) * 0.20;
 
 type BubbleType = {
     id: number;
@@ -93,10 +93,16 @@ export default function SmartBubblepop() {
         let shuffledOptions = [...question.options].map((opt, i) => ({ opt, originalIndex: i }))
             .sort(() => 0.5 - Math.random());
 
-        const row1Y = isTablet ? 30 : 10;
-        const row2Y = isTablet ? 30 + BUBBLE_SIZE + 40 : 10 + BUBBLE_SIZE + 15;
-        const col1X = width * 0.15;
-        const col2X = width * 0.55;
+        const row1Y = isTablet ? 10 : 0;
+        const row2Y = isTablet ? 10 + BUBBLE_SIZE + 20 : BUBBLE_SIZE + 5;
+
+        // Calculate center cluster based on screen width
+        const gapX = isTablet ? 40 : 15; // tighter horizontal gap
+        const totalGridWidth = (BUBBLE_SIZE * 2) + gapX;
+        const startX = (width - totalGridWidth) / 2;
+
+        const col1X = startX;
+        const col2X = startX + BUBBLE_SIZE + gapX;
 
         const positions = [
             { x: col1X, y: row1Y },
@@ -236,7 +242,7 @@ export default function SmartBubblepop() {
                         ]}
                     >
                         <TouchableOpacity activeOpacity={0.8} style={styles.bubbleTouchable} onPress={() => handleBubblePress(b)}>
-                            <Text style={[styles.bubbleText, b.isBig && { fontSize: isTablet ? 60 : 40 }]}>{b.text}</Text>
+                            <Text style={[styles.bubbleText, b.isBig && { fontSize: isTablet ? 50 : 36 }]}>{b.text}</Text>
                         </TouchableOpacity>
                     </Animated.View>
                 ))}
@@ -264,8 +270,8 @@ const styles = StyleSheet.create({
     progressText: { fontSize: isTablet ? 20 : 14, fontWeight: 'bold', color: '#2C3E50' },
     scoreText: { fontSize: isTablet ? 20 : 14, fontWeight: 'bold', color: '#2C3E50', width: 90, textAlign: 'right' },
 
-    stageTitleLbl: { fontSize: isTablet ? 28 : 20, fontWeight: 'bold', color: '#2C3E50', textAlign: 'center', marginVertical: 10, paddingHorizontal: 10 },
-    instructionLbl: { fontSize: isTablet ? 32 : 22, fontWeight: 'bold', color: '#2C3E50', textAlign: 'center', marginBottom: 10, paddingHorizontal: 10 },
+    stageTitleLbl: { fontSize: isTablet ? 24 : 16, fontWeight: 'bold', color: '#2C3E50', textAlign: 'center', marginVertical: 5, paddingHorizontal: 10 },
+    instructionLbl: { fontSize: isTablet ? 28 : 18, fontWeight: 'bold', color: '#2C3E50', textAlign: 'center', marginBottom: 10, paddingHorizontal: 10 },
 
     gameArea: { flex: 1, position: 'relative' },
 
@@ -290,7 +296,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     bubbleText: {
-        fontSize: isTablet ? 40 : 24,
+        fontSize: isTablet ? 36 : 20,
         color: '#2C3E50',
         textAlign: 'center'
     },
