@@ -121,7 +121,7 @@ export default function RoutineBuilder() {
         const dropY = gesture.moveY;
 
         let droppedSlotIdx = -1;
-        const forgiveness = 20;
+        const forgiveness = 40;
 
         for (let i = 0; i < 4; i++) {
             const layout = slotLayoutsRef.current[i];
@@ -180,10 +180,12 @@ export default function RoutineBuilder() {
     };
 
     const wrongDrop = (task: any) => {
-        Animated.spring(task.pan, {
-            toValue: task.initialPos,
-            useNativeDriver: false
-        }).start();
+        Animated.sequence([
+            Animated.timing(task.pan.x, { toValue: (task.pan.x as any)._value - 15, duration: 50, useNativeDriver: false }),
+            Animated.timing(task.pan.x, { toValue: (task.pan.x as any)._value + 15, duration: 50, useNativeDriver: false }),
+            Animated.timing(task.pan.x, { toValue: (task.pan.x as any)._value - 15, duration: 50, useNativeDriver: false }),
+            Animated.spring(task.pan, { toValue: task.initialPos, useNativeDriver: false })
+        ]).start();
 
         setFeedback("❌ Try Again");
         setFeedbackColor("#E74C3C");
@@ -261,10 +263,10 @@ export default function RoutineBuilder() {
         return (
             <View style={styles.menuContainer}>
                 <Text style={styles.menuTitle}>Routine Sequence Builder</Text>
-                <TouchableOpacity style={[styles.menuBtn, { backgroundColor: '#4CAF50' }]} onPress={() => setLevel(1)}>
+                <TouchableOpacity style={[styles.menuBtn, { backgroundColor: '#4CAF50' }]} onPress={() => { setLevel(1); setCurrentScenarioIdx(0); setCurrentStepIdx(0); }}>
                     <Text style={styles.menuBtnText}>Level 1 (With Hints & Forgiving Drops)</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.menuBtn, { backgroundColor: '#E53935' }]} onPress={() => setLevel(2)}>
+                <TouchableOpacity style={[styles.menuBtn, { backgroundColor: '#E53935' }]} onPress={() => { setLevel(2); setCurrentScenarioIdx(0); setCurrentStepIdx(0); }}>
                     <Text style={styles.menuBtnText}>Level 2 (Strict Rules)</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={[styles.menuBtn, { backgroundColor: '#9E9E9E' }]} onPress={() => router.push('/games' as any)}>
@@ -288,31 +290,42 @@ export default function RoutineBuilder() {
             </View>
 
             <View style={styles.sequenceSection}>
-                {[0, 1, 2, 3].map((i) => (
-                    <React.Fragment key={i}>
-                        <View
-                            style={[styles.slot, { backgroundColor: slots[i] ? '#A5D6A7' : '#E0E0E0' }]}
-                            ref={el => { slotRefs.current[i] = el; }}
-                            onLayout={() => {
-                                if (slotRefs.current[i]) {
-                                    slotRefs.current[i].measureInWindow((x: number, y: number, w: number, h: number) => {
-                                        slotLayoutsRef.current[i] = { x, y, width: w, height: h };
-                                    });
-                                }
-                            }}
-                        >
-                            {slots[i] ? (
-                                <>
-                                    <Image source={slots[i].icon} style={styles.slotImage} />
-                                    <Text style={styles.slotText}>{slots[i].text} ✔</Text>
-                                </>
-                            ) : (
-                                <Text style={styles.slotPlaceholder}>Step {i + 1}</Text>
-                            )}
-                        </View>
-                        {i < 3 && <Text style={styles.arrowText}>➔</Text>}
-                    </React.Fragment>
-                ))}
+                {[0, 1, 2, 3].map((i) => {
+                    const isCompleted = i < currentStepIdx;
+                    const isActive = i === currentStepIdx;
+                    const isLocked = i > currentStepIdx;
+
+                    return (
+                        <React.Fragment key={i}>
+                            <View
+                                style={[styles.slot, {
+                                    backgroundColor: isCompleted ? '#A5D6A7' : (isActive ? '#FFF9C4' : '#E0E0E0'),
+                                    borderColor: isActive ? '#F39C12' : '#BDBDBD',
+                                    borderWidth: isActive ? 4 : 2,
+                                    opacity: isCompleted ? 0.6 : (isLocked ? 0.5 : 1)
+                                }]}
+                                ref={el => { slotRefs.current[i] = el; }}
+                                onLayout={() => {
+                                    if (slotRefs.current[i]) {
+                                        slotRefs.current[i].measureInWindow((x: number, y: number, w: number, h: number) => {
+                                            slotLayoutsRef.current[i] = { x, y, width: w, height: h };
+                                        });
+                                    }
+                                }}
+                            >
+                                {slots[i] ? (
+                                    <>
+                                        <Image source={slots[i].icon} style={styles.slotImage} />
+                                        <Text style={styles.slotText}>{slots[i].text} ✔</Text>
+                                    </>
+                                ) : (
+                                    <Text style={styles.slotPlaceholder}>Step {i + 1}</Text>
+                                )}
+                            </View>
+                            {i < 3 && <Text style={styles.arrowText}>➔</Text>}
+                        </React.Fragment>
+                    )
+                })}
             </View>
 
             <View style={styles.traySection}>
@@ -382,35 +395,35 @@ function DraggableItem({ task, onDrop }: { task: any, onDrop: (task: any, gestur
 
 
 const styles = StyleSheet.create({
-    menuContainer: { flex: 1, backgroundColor: '#EAF7F0', justifyContent: 'center', alignItems: 'center', padding: 20 },
-    menuTitle: { fontSize: isTablet ? 40 : 28, fontWeight: 'bold', color: '#2C3E50', marginBottom: 40, textAlign: 'center' },
-    menuBtn: { width: '90%', padding: 15, borderRadius: 15, marginBottom: 15, alignItems: 'center' },
-    menuBtnText: { fontSize: isTablet ? 24 : 18, fontWeight: 'bold', color: '#FFF', textAlign: 'center' },
+    menuContainer: { flex: 1, backgroundColor: '#EAF7F0', justifyContent: 'center', alignItems: 'center', padding: 10 },
+    menuTitle: { fontSize: isTablet ? 32 : 22, fontWeight: 'bold', color: '#2C3E50', marginBottom: 20, textAlign: 'center' },
+    menuBtn: { width: '80%', padding: 12, borderRadius: 12, marginBottom: 12, alignItems: 'center' },
+    menuBtnText: { fontSize: isTablet ? 20 : 16, fontWeight: 'bold', color: '#FFF', textAlign: 'center' },
 
     gameContainer: { flex: 1, backgroundColor: '#EAF7F0' },
-    topSection: { height: '15%', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10 },
-    homeButton: { backgroundColor: '#A5D6A7', padding: 10, borderRadius: 8, marginRight: 10 },
-    homeButtonText: { fontSize: isTablet ? 20 : 16, fontWeight: 'bold', color: '#2E7D32' },
-    scenarioLabel: { fontSize: isTablet ? 28 : 18, fontWeight: 'bold', color: '#2C3E50', flexShrink: 1 },
+    topSection: { height: '12%', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10 },
+    homeButton: { backgroundColor: '#A5D6A7', padding: 8, borderRadius: 8, marginRight: 10 },
+    homeButtonText: { fontSize: isTablet ? 18 : 14, fontWeight: 'bold', color: '#2E7D32' },
+    scenarioLabel: { fontSize: isTablet ? 24 : 16, fontWeight: 'bold', color: '#2C3E50', flexShrink: 1 },
 
-    sequenceSection: { height: '30%', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 5 },
-    arrowText: { fontSize: isTablet ? 24 : 16, color: '#7F8C8D', marginHorizontal: 2 },
-    slot: { width: SLOT_SIZE, height: SLOT_SIZE, borderRadius: 15, justifyContent: 'center', alignItems: 'center', padding: 5, borderWidth: 2, borderColor: '#BDBDBD', borderStyle: 'dashed' },
-    slotPlaceholder: { fontSize: isTablet ? 18 : 12, fontWeight: 'bold', color: '#7F8C8D', textAlign: 'center' },
+    sequenceSection: { height: '28%', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 5 },
+    arrowText: { fontSize: isTablet ? 20 : 14, color: '#7F8C8D', marginHorizontal: 2 },
+    slot: { width: SLOT_SIZE, height: SLOT_SIZE, borderRadius: 12, justifyContent: 'center', alignItems: 'center', padding: 5, borderWidth: 2, borderColor: '#BDBDBD', borderStyle: 'dashed' },
+    slotPlaceholder: { fontSize: isTablet ? 16 : 10, fontWeight: 'bold', color: '#7F8C8D', textAlign: 'center' },
     slotImage: { width: '100%', height: '55%', resizeMode: 'contain' },
-    slotText: { fontSize: isTablet ? 12 : 9, fontWeight: 'bold', color: '#27AE60', marginTop: 5, textAlign: 'center' },
+    slotText: { fontSize: isTablet ? 10 : 8, fontWeight: 'bold', color: '#27AE60', marginTop: 4, textAlign: 'center' },
 
-    traySection: { height: '45%', backgroundColor: '#D5F5E3', marginHorizontal: 15, borderRadius: 20, paddingTop: 15, alignItems: 'center', borderWidth: 2, borderColor: '#A9DFBF' },
-    trayTitle: { fontSize: isTablet ? 20 : 14, fontWeight: 'bold', color: '#2C3E50' },
+    traySection: { height: '45%', backgroundColor: '#D5F5E3', marginHorizontal: 15, borderRadius: 16, paddingTop: 10, alignItems: 'center', borderWidth: 2, borderColor: '#A9DFBF' },
+    trayTitle: { fontSize: isTablet ? 18 : 12, fontWeight: 'bold', color: '#2C3E50' },
 
-    feedbackSection: { height: '10%', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 10 },
-    feedbackText: { fontSize: isTablet ? 32 : 20, fontWeight: 'bold', textAlign: 'center' },
+    feedbackSection: { height: '15%', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 10 },
+    feedbackText: { fontSize: isTablet ? 26 : 16, fontWeight: 'bold', textAlign: 'center' },
 
     taskBox: {
         position: 'absolute',
         width: TASK_WIDTH,
         height: TASK_HEIGHT,
-        borderRadius: 15,
+        borderRadius: 12,
         padding: 5,
         elevation: 8,
         shadowColor: '#000',
@@ -423,5 +436,5 @@ const styles = StyleSheet.create({
         borderColor: '#E0E0E0'
     },
     taskImage: { width: '100%', height: '55%', resizeMode: 'contain' },
-    taskText: { fontSize: isTablet ? 12 : 9, fontWeight: 'bold', color: '#333', marginTop: 2, textAlign: 'center' }
+    taskText: { fontSize: isTablet ? 10 : 8, fontWeight: 'bold', color: '#333', marginTop: 2, textAlign: 'center' }
 });

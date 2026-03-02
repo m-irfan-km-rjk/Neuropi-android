@@ -61,6 +61,7 @@ export default function SmartBubblepop() {
     const [feedback, setFeedback] = useState("");
     const [feedbackColor, setFeedbackColor] = useState("#333");
     const [isProcessing, setIsProcessing] = useState(false);
+    const [wrongAttempts, setWrongAttempts] = useState(0);
 
     useEffect(() => {
         if (currentStageId) {
@@ -72,11 +73,13 @@ export default function SmartBubblepop() {
         setCurrentStageId(stageId);
         setCurrentQuestionIdx(0);
         setScore(0);
+        setWrongAttempts(0);
     };
 
     const loadQuestion = () => {
         setIsProcessing(false);
         setFeedback("");
+        setWrongAttempts(0);
 
         const stage = STAGES[currentStageId as keyof typeof STAGES];
         if (currentQuestionIdx >= stage.questions.length) {
@@ -173,8 +176,25 @@ export default function SmartBubblepop() {
                 Animated.timing(bubble.valX, { toValue: (bubble.valX as any)._value, duration: 50, useNativeDriver: false }),
             ]).start();
 
-            setFeedback("Try Again");
-            setFeedbackColor("#E67E22");
+            const fails = wrongAttempts + 1;
+            setWrongAttempts(fails);
+
+            if (fails >= 3) {
+                setFeedback("Hint! Look for the pulsing shape 👀");
+                setFeedbackColor("#F39C12");
+                const correctBubble = bubbles.find((b: BubbleType) => b.isCorrect);
+                if (correctBubble) {
+                    Animated.loop(
+                        Animated.sequence([
+                            Animated.timing(correctBubble.scale, { toValue: 1.15, duration: 500, useNativeDriver: false }),
+                            Animated.timing(correctBubble.scale, { toValue: 1, duration: 500, useNativeDriver: false })
+                        ])
+                    ).start();
+                }
+            } else {
+                setFeedback("Try Again");
+                setFeedbackColor("#E67E22");
+            }
         }
     };
 
@@ -254,24 +274,24 @@ export default function SmartBubblepop() {
 }
 
 const styles = StyleSheet.create({
-    menuContainer: { flexGrow: 1, backgroundColor: '#F9FBFA', padding: 20 },
-    header: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
+    menuContainer: { flexGrow: 1, backgroundColor: '#F9FBFA', padding: 10 },
+    header: { flexDirection: 'row', alignItems: 'center', marginBottom: 15 },
     homeBtn: { backgroundColor: '#AED6F1', paddingHorizontal: 15, paddingVertical: 10, borderRadius: 10, marginRight: 15 },
-    homeBtnText: { fontSize: isTablet ? 20 : 16, fontWeight: 'bold', color: '#2C3E50' },
-    menuTitle: { fontSize: isTablet ? 42 : 28, fontWeight: 'bold', color: '#2C3E50', flexShrink: 1 },
-    menuSubtitle: { fontSize: isTablet ? 24 : 18, color: '#2C3E50', marginBottom: 20 },
-    stageBtn: { backgroundColor: '#D6EAF8', borderColor: '#AED6F1', borderWidth: 2, borderRadius: 20, padding: isTablet ? 30 : 20, marginBottom: 15 },
-    stageBtnText: { fontSize: isTablet ? 28 : 18, fontWeight: 'bold', color: '#2C3E50', textAlign: 'center' },
+    homeBtnText: { fontSize: isTablet ? 18 : 14, fontWeight: 'bold', color: '#2C3E50' },
+    menuTitle: { fontSize: isTablet ? 32 : 24, fontWeight: 'bold', color: '#2C3E50', flexShrink: 1 },
+    menuSubtitle: { fontSize: isTablet ? 20 : 16, color: '#2C3E50', marginBottom: 15 },
+    stageBtn: { backgroundColor: '#D6EAF8', borderColor: '#AED6F1', borderWidth: 2, borderRadius: 16, padding: isTablet ? 20 : 15, marginBottom: 12 },
+    stageBtnText: { fontSize: isTablet ? 24 : 16, fontWeight: 'bold', color: '#2C3E50', textAlign: 'center' },
 
     gameContainer: { flex: 1, backgroundColor: '#F9FBFA' },
-    gameHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 10, height: 70 },
+    gameHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 10, height: 60 },
     gameBackBtn: { backgroundColor: '#AED6F1', paddingHorizontal: 10, paddingVertical: 8, borderRadius: 8 },
-    gameBackBtnText: { fontSize: isTablet ? 18 : 14, fontWeight: 'bold', color: '#2C3E50' },
-    progressText: { fontSize: isTablet ? 20 : 14, fontWeight: 'bold', color: '#2C3E50' },
-    scoreText: { fontSize: isTablet ? 20 : 14, fontWeight: 'bold', color: '#2C3E50', width: 90, textAlign: 'right' },
+    gameBackBtnText: { fontSize: isTablet ? 16 : 12, fontWeight: 'bold', color: '#2C3E50' },
+    progressText: { fontSize: isTablet ? 18 : 14, fontWeight: 'bold', color: '#2C3E50' },
+    scoreText: { fontSize: isTablet ? 18 : 14, fontWeight: 'bold', color: '#2C3E50', width: 90, textAlign: 'right' },
 
-    stageTitleLbl: { fontSize: isTablet ? 24 : 16, fontWeight: 'bold', color: '#2C3E50', textAlign: 'center', marginVertical: 5, paddingHorizontal: 10 },
-    instructionLbl: { fontSize: isTablet ? 28 : 18, fontWeight: 'bold', color: '#2C3E50', textAlign: 'center', marginBottom: 10, paddingHorizontal: 10 },
+    stageTitleLbl: { fontSize: isTablet ? 20 : 14, fontWeight: 'bold', color: '#2C3E50', textAlign: 'center', marginVertical: 4, paddingHorizontal: 10 },
+    instructionLbl: { fontSize: isTablet ? 24 : 16, fontWeight: 'bold', color: '#2C3E50', textAlign: 'center', marginBottom: 8, paddingHorizontal: 10 },
 
     gameArea: { flex: 1, position: 'relative' },
 
@@ -296,10 +316,10 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     bubbleText: {
-        fontSize: isTablet ? 36 : 20,
+        fontSize: isTablet ? 32 : 18,
         color: '#2C3E50',
         textAlign: 'center'
     },
 
-    feedbackLbl: { fontSize: isTablet ? 36 : 24, fontWeight: 'bold', textAlign: 'center', height: 60, marginBottom: 10 },
+    feedbackLbl: { fontSize: isTablet ? 32 : 20, fontWeight: 'bold', textAlign: 'center', height: 50, marginBottom: 5 },
 });
