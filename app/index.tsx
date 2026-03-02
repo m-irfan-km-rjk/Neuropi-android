@@ -38,7 +38,7 @@ export default function DashboardScreen() {
                     <Text style={styles.clockLabel}>{time}</Text>
                     <Text style={styles.dateLabel}>{date}</Text>
                 </View>
-                <TouchableOpacity style={styles.settingsButton} onPress={() => router.push('/admin' as any)}>
+                <TouchableOpacity style={styles.settingsButton} onPress={() => router.push('/progress' as any)}>
                     <Ionicons name="settings-sharp" size={isTablet ? 40 : 28} color="#555" />
                 </TouchableOpacity>
             </View>

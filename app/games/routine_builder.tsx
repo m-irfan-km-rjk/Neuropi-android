@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import React, { useState, useRef, useEffect } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, Image, Animated, PanResponder, Dimensions } from 'react-native';
+import { saveGameProgress } from '../../utils/storage';
 
 const SCENARIOS = [
     {
@@ -68,6 +69,8 @@ export default function RoutineBuilder() {
     const [slots, setSlots] = useState<any[]>([null, null, null, null]);
     const [feedback, setFeedback] = useState("");
     const [feedbackColor, setFeedbackColor] = useState("#333");
+    const [startTime, setStartTime] = useState<number>(0);
+    const [totalGameMisses, setTotalGameMisses] = useState<number>(0);
 
     const slotRefs = useRef<any[]>([]);
     const slotLayoutsRef = useRef<any[]>([]);
@@ -96,6 +99,19 @@ export default function RoutineBuilder() {
             setFeedback("All Scenarios Complete 🎉");
             setFeedbackColor("#2C3E50");
             setShuffledTasks([]);
+
+            if (level !== null && startTime > 0) {
+                const timeSpent = Math.floor((Date.now() - startTime) / 1000);
+                const totalSteps = SCENARIOS.reduce((acc, curr) => acc + curr.steps.length, 0);
+                const accuracy = totalSteps > 0 ? Math.round((totalSteps / (totalSteps + totalGameMisses)) * 100) : 0;
+                saveGameProgress('routine_builder', {
+                    level,
+                    timeSpent,
+                    accuracy,
+                    score: totalSteps * 10,
+                    totalMisses: totalGameMisses
+                });
+            }
             return;
         }
 
@@ -204,6 +220,7 @@ export default function RoutineBuilder() {
         setFeedback("❌ Try Again");
         setFeedbackColor("#E74C3C");
         failedAttemptsRef.current += 1;
+        setTotalGameMisses(prev => prev + 1);
 
         if (level === 2) {
             // Level 2 resets the board smoothly without re-shuffling
@@ -277,10 +294,10 @@ export default function RoutineBuilder() {
         return (
             <View style={styles.menuContainer}>
                 <Text style={styles.menuTitle}>Routine Sequence Builder</Text>
-                <TouchableOpacity style={[styles.menuBtn, { backgroundColor: '#4CAF50' }]} onPress={() => { setLevel(1); setCurrentScenarioIdx(0); setCurrentStepIdx(0); }}>
+                <TouchableOpacity style={[styles.menuBtn, { backgroundColor: '#4CAF50' }]} onPress={() => { setLevel(1); setCurrentScenarioIdx(0); setCurrentStepIdx(0); setStartTime(Date.now()); setTotalGameMisses(0); }}>
                     <Text style={styles.menuBtnText}>Level 1 (With Hints & Forgiving Drops)</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.menuBtn, { backgroundColor: '#E53935' }]} onPress={() => { setLevel(2); setCurrentScenarioIdx(0); setCurrentStepIdx(0); }}>
+                <TouchableOpacity style={[styles.menuBtn, { backgroundColor: '#E53935' }]} onPress={() => { setLevel(2); setCurrentScenarioIdx(0); setCurrentStepIdx(0); setStartTime(Date.now()); setTotalGameMisses(0); }}>
                     <Text style={styles.menuBtnText}>Level 2 (Strict Rules)</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={[styles.menuBtn, { backgroundColor: '#9E9E9E' }]} onPress={() => router.push('/games' as any)}>

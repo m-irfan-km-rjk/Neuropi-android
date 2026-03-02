@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { saveGameProgress } from '../../utils/storage';
 
 const SHAPES = [
     { icon: '🔴', color: '#FF8A80' },
@@ -24,6 +25,8 @@ export default function MemoryMatchScreen() {
     const [level, setLevel] = useState<number>(1);
     const [numPairs, setNumPairs] = useState<number>(3); // Level 1 is 3 pairs
     const [consecutiveMisses, setConsecutiveMisses] = useState<number>(0);
+    const [totalMisses, setTotalMisses] = useState<number>(0);
+    const [startTime, setStartTime] = useState<number>(0);
 
     // 1: 3x2 (3 pairs), 2: 4x3 (6 pairs), 3: 4x4 (8 pairs)
     const cols = level === 1 ? 3 : 4;
@@ -48,6 +51,8 @@ export default function MemoryMatchScreen() {
         setFlippedIndices([]);
         setMatchedPairs(0);
         setConsecutiveMisses(0);
+        setTotalMisses(0);
+        setStartTime(Date.now());
         setIsLocked(true);
         setInfoText("Memorize the tiles!");
 
@@ -128,6 +133,7 @@ export default function MemoryMatchScreen() {
                     }, 1000);
                 }, 500);
                 setConsecutiveMisses(prev => prev + 1);
+                setTotalMisses(prev => prev + 1);
             }
         }
     };
@@ -135,6 +141,17 @@ export default function MemoryMatchScreen() {
     useEffect(() => {
         if (matchedPairs > 0 && matchedPairs === numPairs) {
             setInfoText("You did it! You matched them all! ★ ★ ★");
+
+            const timeSpent = Math.floor((Date.now() - startTime) / 1000);
+            const accuracy = Math.round((numPairs / (numPairs + totalMisses)) * 100);
+
+            saveGameProgress('memory_match', {
+                level,
+                timeSpent,
+                accuracy,
+                score: numPairs * 10,
+                totalMisses
+            });
         }
     }, [matchedPairs]);
 

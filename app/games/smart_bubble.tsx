@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, Dimensions, Animated, Easing, ScrollView } from 'react-native';
+import { saveGameProgress } from '../../utils/storage';
 
 const STAGES = {
     stage1: {
@@ -62,6 +63,8 @@ export default function SmartBubblepop() {
     const [feedbackColor, setFeedbackColor] = useState("#333");
     const [isProcessing, setIsProcessing] = useState(false);
     const [wrongAttempts, setWrongAttempts] = useState(0);
+    const [totalStageMisses, setTotalStageMisses] = useState<number>(0);
+    const [startTime, setStartTime] = useState<number>(0);
 
     useEffect(() => {
         if (currentStageId) {
@@ -74,6 +77,8 @@ export default function SmartBubblepop() {
         setCurrentQuestionIdx(0);
         setScore(0);
         setWrongAttempts(0);
+        setTotalStageMisses(0);
+        setStartTime(Date.now());
     };
 
     const loadQuestion = () => {
@@ -85,6 +90,22 @@ export default function SmartBubblepop() {
         if (currentQuestionIdx >= stage.questions.length) {
             setFeedback("Stage Complete 🎉");
             setFeedbackColor("#2C3E50");
+
+            if (startTime > 0) {
+                const timeSpent = Math.floor((Date.now() - startTime) / 1000);
+                const qCount = stage.questions.length;
+                const accuracy = Math.round((qCount / (qCount + totalStageMisses)) * 100);
+                // Extracting just number from "stage1" for level
+                const levelNum = parseInt(currentStageId?.replace(/\D/g, '') || "1");
+                saveGameProgress('smart_bubble', {
+                    level: levelNum,
+                    timeSpent,
+                    accuracy,
+                    score,
+                    totalMisses: totalStageMisses
+                });
+            }
+
             setTimeout(() => {
                 setCurrentStageId(null);
             }, 2500);
@@ -178,6 +199,7 @@ export default function SmartBubblepop() {
 
             const fails = wrongAttempts + 1;
             setWrongAttempts(fails);
+            setTotalStageMisses(prev => prev + 1);
 
             if (fails >= 3) {
                 setFeedback("Hint! Look for the pulsing shape 👀");
