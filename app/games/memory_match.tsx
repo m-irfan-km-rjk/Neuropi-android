@@ -151,57 +151,68 @@ export default function MemoryMatchScreen() {
                 </TouchableOpacity>
             </View>
 
-            {/* Level bar */}
-            <View style={styles.controlsBar}>
-                <Text style={styles.levelLabel}>Grid:</Text>
-                {[1, 2, 3].map(lvl => (
-                    <TouchableOpacity
-                        key={lvl}
-                        style={[styles.levelBtn, { backgroundColor: level === lvl ? '#66BB6A' : '#C8E6C9' }]}
-                        onPress={() => setLevel(lvl)}
-                    >
-                        <Text style={[styles.levelBtnText, { color: level === lvl ? '#FFF' : '#2E7D32' }]}>
-                            {lvl === 1 ? '3x2' : (lvl === 2 ? '4x3' : '4x4')}
-                        </Text>
-                    </TouchableOpacity>
-                ))}
-            </View>
+            {/* Main Game Layout */}
+            <View style={styles.mainContent}>
 
-            {/* Progress */}
-            <View style={styles.progressWrap}>
-                <Text style={styles.progressText}>
-                    Progress: {'★ '.repeat(matchedPairs) + '☆ '.repeat(numPairs - matchedPairs)}
-                </Text>
-            </View>
+                {/* Left Sidebar: Controls */}
+                <View style={styles.leftSidebar}>
+                    <Text style={styles.levelLabel}>Grid</Text>
+                    {[1, 2, 3].map(lvl => (
+                        <TouchableOpacity
+                            key={lvl}
+                            style={[styles.levelBtn, { backgroundColor: level === lvl ? '#66BB6A' : '#C8E6C9' }]}
+                            onPress={() => setLevel(lvl)}
+                        >
+                            <Text style={[styles.levelBtnText, { color: level === lvl ? '#FFF' : '#2E7D32' }]}>
+                                {lvl === 1 ? '3x2' : (lvl === 2 ? '4x3' : '4x4')}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
 
-            {/* Board */}
-            <View style={styles.boardWrap}>
-                <View style={styles.boardInner}>
-                    <View style={[styles.grid, { flexWrap: 'wrap', width: cols * 70, height: rows * 70 }]}>
-                        {cards.map((card, index) => (
-                            <TouchableOpacity
-                                key={index}
-                                activeOpacity={1}
-                                style={[
-                                    styles.cardStyle,
-                                    {
-                                        width: 60, height: 60,
-                                        backgroundColor: card.isFlipped ? '#FFF' : '#C8E6C9',
-                                        borderColor: card.isWrong ? '#E53935' : (card.isHint ? '#FFD700' : (card.isFlipped ? '#E0E0E0' : '#A5D6A7')),
-                                        borderWidth: card.isHint || card.isWrong ? 4 : 2,
-                                    }
-                                ]}
-                                onPress={() => handleCardPress(index)}
-                            >
-                                {card.isFlipped ? (
-                                    <Text style={styles.cardIcon}>{card.icon}</Text>
-                                ) : (
-                                    <Text style={styles.cardQuestionMark}>?</Text>
-                                )}
-                            </TouchableOpacity>
+                {/* Center: Board */}
+                <View style={styles.boardWrap}>
+                    <View style={styles.boardInner}>
+                        <View style={[styles.grid, { flexWrap: 'wrap', width: cols * 70, height: rows * 70 }]}>
+                            {cards.map((card, index) => (
+                                <TouchableOpacity
+                                    key={index}
+                                    activeOpacity={1}
+                                    style={[
+                                        styles.cardStyle,
+                                        {
+                                            width: 60, height: 60,
+                                            backgroundColor: card.isFlipped ? '#FFF' : '#C8E6C9',
+                                            borderColor: card.isWrong ? '#E53935' : (card.isHint ? '#FFD700' : (card.isFlipped ? '#E0E0E0' : '#A5D6A7')),
+                                            borderWidth: card.isHint || card.isWrong ? 4 : 2,
+                                        }
+                                    ]}
+                                    onPress={() => handleCardPress(index)}
+                                >
+                                    {card.isFlipped ? (
+                                        <Text style={styles.cardIcon}>{card.icon}</Text>
+                                    ) : (
+                                        <Text style={styles.cardQuestionMark}>?</Text>
+                                    )}
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                    </View>
+                </View>
+
+                {/* Right Sidebar: Progress */}
+                <View style={styles.rightSidebar}>
+                    <Text style={styles.progressTitle}>Progress</Text>
+                    <View style={styles.starsContainer}>
+                        {Array.from({ length: matchedPairs }).map((_, i) => (
+                            <Text key={`m-${i}`} style={styles.starText}>★</Text>
+                        ))}
+                        {Array.from({ length: numPairs - matchedPairs }).map((_, i) => (
+                            <Text key={`u-${i}`} style={styles.starText}>☆</Text>
                         ))}
                     </View>
                 </View>
+
             </View>
 
             {/* Info Label */}
@@ -253,39 +264,64 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#2E7D32',
     },
-    controlsBar: {
+    mainContent: {
+        flex: 1,
         flexDirection: 'row',
-        height: 40,
-        justifyContent: 'center',
         alignItems: 'center',
-        gap: 8,
-        marginBottom: 5,
+        paddingHorizontal: 10,
+    },
+    leftSidebar: {
+        width: 80,
+        height: '80%',
+        backgroundColor: 'rgba(255,255,255,0.4)',
+        borderRadius: 12,
+        alignItems: 'center',
+        paddingVertical: 10,
+        gap: 15,
+        marginRight: 10,
+    },
+    rightSidebar: {
+        width: 80,
+        height: '80%',
+        backgroundColor: 'rgba(255,255,255,0.4)',
+        borderRadius: 12,
+        alignItems: 'center',
+        paddingVertical: 10,
+        marginLeft: 10,
     },
     levelLabel: {
         fontSize: 16,
         fontWeight: 'bold',
         color: '#2E7D32',
-        marginRight: 8,
+        marginBottom: 5,
     },
     levelBtn: {
-        paddingHorizontal: 10,
-        paddingVertical: 6,
-        borderRadius: 5,
+        width: '80%',
+        paddingVertical: 12,
+        borderRadius: 8,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     levelBtnText: {
         fontWeight: 'bold',
+        fontSize: 16,
+    },
+    progressTitle: {
         fontSize: 14,
-    },
-    progressWrap: {
-        height: 30,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 5,
-    },
-    progressText: {
-        fontSize: 18,
         color: '#2E7D32',
         fontWeight: 'bold',
+        marginBottom: 10,
+    },
+    starsContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+        paddingHorizontal: 5,
+        gap: 4,
+    },
+    starText: {
+        fontSize: 20,
+        color: '#2E7D32',
     },
     boardWrap: {
         flex: 1,
