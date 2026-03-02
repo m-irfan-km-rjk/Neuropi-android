@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const GamesCard = ({ title, desc, icon, bgColor, borderColor, onPress }: any) => (
     <TouchableOpacity style={[styles.card, { backgroundColor: bgColor, borderColor: borderColor }]} onPress={onPress}>
@@ -23,7 +23,7 @@ export default function GamesHubScreen() {
                 <Text style={styles.headerTitle}>🎮  Games</Text>
             </View>
 
-            <ScrollView contentContainerStyle={styles.scrollContent}>
+            <View style={styles.scrollContent}>
                 <Text style={styles.subtitle}>Choose an activity!</Text>
                 <View style={styles.gridContainer}>
                     <GamesCard
@@ -67,7 +67,7 @@ export default function GamesHubScreen() {
                         onPress={() => router.push('/games/visual_real_life' as any)}
                     />
                 </View>
-            </ScrollView>
+            </View>
         </View>
     );
 }
@@ -76,55 +76,55 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#E8F5E9',
-        padding: 20,
+        padding: 10,
     },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
-        height: 80,
-        marginTop: 20,
-        marginBottom: 10,
+        height: 60,
+        marginTop: 10,
+        marginBottom: 5,
     },
     backButton: {
-        width: 100,
+        width: 80,
         backgroundColor: '#A5D6A7',
-        padding: 15,
+        padding: 10,
         borderRadius: 8,
         alignItems: 'center',
-        marginRight: 20,
+        marginRight: 15,
     },
     backButtonText: {
         color: '#FFFFFF',
         fontWeight: 'bold',
-        fontSize: 16,
+        fontSize: 14,
     },
     headerTitle: {
-        fontSize: 34,
+        fontSize: 24,
         fontWeight: 'bold',
         color: '#2E7D32',
         flex: 1,
     },
     scrollContent: {
-        paddingBottom: 40,
+        paddingBottom: 20,
     },
     subtitle: {
-        fontSize: 20,
+        fontSize: 16,
         color: '#555555',
-        marginBottom: 20,
+        marginBottom: 10,
         marginLeft: 10,
     },
     gridContainer: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        justifyContent: 'space-between',
+        justifyContent: 'center',
         gap: 15,
     },
     card: {
-        width: '47%',
-        aspectRatio: 0.85,
-        borderRadius: 22,
-        borderWidth: 2.5,
-        padding: 15,
+        width: '30%',
+        aspectRatio: 1.8,
+        borderRadius: 12,
+        borderWidth: 2,
+        padding: 5,
         alignItems: 'center',
         justifyContent: 'center',
         elevation: 3,
@@ -134,18 +134,18 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 2 },
     },
     cardIcon: {
-        fontSize: 54,
-        marginBottom: 8,
+        fontSize: 32,
+        marginBottom: 2,
     },
     cardTitle: {
-        fontSize: 18,
+        fontSize: 14,
         fontWeight: 'bold',
         textAlign: 'center',
         color: '#2E7D32',
-        marginBottom: 4,
+        marginBottom: 2,
     },
     cardDesc: {
-        fontSize: 13,
+        fontSize: 10,
         textAlign: 'center',
         color: '#555555',
     }

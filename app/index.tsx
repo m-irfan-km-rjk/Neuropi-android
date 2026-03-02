@@ -94,53 +94,53 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#FDFCF0',
-        padding: isTablet ? 30 : 15,
-        gap: isTablet ? 20 : 15,
+        padding: isTablet ? 20 : 10,
+        gap: isTablet ? 15 : 10,
     },
     header: {
-        flex: 0.2, // 20% height
+        flex: 0.15, // Reduced from 20%
         flexDirection: 'row',
         backgroundColor: '#FFF',
-        borderRadius: isTablet ? 30 : 15,
+        borderRadius: isTablet ? 20 : 10,
         alignItems: 'center',
     },
     timeDateContainer: {
         flex: 1,
-        paddingHorizontal: isTablet ? 30 : 15,
+        paddingHorizontal: isTablet ? 20 : 10,
         justifyContent: 'center',
     },
     clockLabel: {
-        fontSize: isTablet ? 64 : 26,
+        fontSize: isTablet ? 48 : 22,
         fontWeight: 'bold',
         color: '#333333',
     },
     dateLabel: {
-        fontSize: isTablet ? 24 : 14,
+        fontSize: isTablet ? 20 : 12,
         color: '#888888',
     },
     settingsButton: {
-        width: isTablet ? 100 : 60,
+        width: isTablet ? 80 : 50,
         alignItems: 'center',
         justifyContent: 'center',
     },
     settingsIcon: {
-        fontSize: isTablet ? 40 : 28,
+        fontSize: isTablet ? 32 : 24,
     },
     nowNextContainer: {
-        flex: 0.5, // 50% height
+        flex: 0.55, // Increased slightly to balance header reduction
         flexDirection: 'row',
-        gap: isTablet ? 30 : 10,
+        gap: isTablet ? 20 : 10,
     },
     nowNextCard: {
         flex: 1,
-        borderRadius: isTablet ? 30 : 15,
+        borderRadius: isTablet ? 20 : 10,
         borderWidth: 2,
-        padding: isTablet ? 20 : 10,
+        padding: isTablet ? 15 : 8,
         alignItems: 'center',
         justifyContent: 'space-between',
     },
     cardHeaderLabel: {
-        fontSize: isTablet ? 32 : 18,
+        fontSize: isTablet ? 24 : 14,
         fontWeight: 'bold',
         alignSelf: 'flex-start',
     },
@@ -150,33 +150,33 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     largeIcon: {
-        fontSize: isTablet ? 80 : 45,
+        fontSize: isTablet ? 60 : 35,
     },
     largeTitle: {
-        fontSize: isTablet ? 40 : 20,
+        fontSize: isTablet ? 32 : 18,
         fontWeight: 'bold',
         color: '#333',
-        marginBottom: isTablet ? 10 : 5,
+        marginBottom: isTablet ? 8 : 4,
         textAlign: 'center',
     },
     navBar: {
         flex: 0.3, // 30% height
         flexDirection: 'row',
-        gap: isTablet ? 20 : 10,
+        gap: isTablet ? 15 : 8,
     },
     dashboardCard: {
         flex: 1,
-        borderRadius: isTablet ? 30 : 15,
-        padding: isTablet ? 20 : 5,
+        borderRadius: isTablet ? 20 : 10,
+        padding: isTablet ? 15 : 5,
         alignItems: 'center',
         justifyContent: 'center',
-        gap: isTablet ? 10 : 5,
+        gap: isTablet ? 8 : 4,
     },
     cardIcon: {
-        fontSize: isTablet ? 60 : 36,
+        fontSize: isTablet ? 45 : 28,
     },
     cardTitle: {
-        fontSize: isTablet ? 30 : 14,
+        fontSize: isTablet ? 24 : 12,
         fontWeight: 'bold',
         textAlign: 'center',
     }

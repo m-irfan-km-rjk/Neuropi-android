@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const emotionsData = [
     { name: 'Happy', emoji: '😊', color: '#FFD700' },
@@ -31,7 +31,7 @@ export default function EmotionSelectionScreen() {
             </Text>
 
             {/* Grid */}
-            <ScrollView contentContainerStyle={styles.gridContainer}>
+            <View style={styles.gridContainer}>
                 {emotionsData.map((emotion) => (
                     <TouchableOpacity
                         key={emotion.name}
@@ -43,7 +43,7 @@ export default function EmotionSelectionScreen() {
                         <Text style={styles.cardTitle}>{emotion.name}</Text>
                     </TouchableOpacity>
                 ))}
-            </ScrollView>
+            </View>
         </View>
     );
 }
@@ -86,24 +86,24 @@ const styles = StyleSheet.create({
     gridContainer: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        gap: 30,
+        gap: 15,
         justifyContent: 'center',
-        paddingBottom: 50,
+        paddingBottom: 10,
     },
     card: {
-        width: 200,
-        height: 250,
-        borderRadius: 15,
-        padding: 20,
+        width: 140,
+        height: 140,
+        borderRadius: 12,
+        padding: 10,
         justifyContent: 'center',
         alignItems: 'center',
     },
     cardEmoji: {
-        fontSize: 80,
-        marginBottom: 20,
+        fontSize: 50,
+        marginBottom: 10,
     },
     cardTitle: {
-        fontSize: 24,
+        fontSize: 18,
         fontWeight: 'bold',
         color: '#FFF',
     },

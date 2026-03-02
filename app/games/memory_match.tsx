@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const SHAPES = [
     { icon: '🔴', color: '#FF8A80' },
@@ -139,7 +139,7 @@ export default function MemoryMatchScreen() {
     }, [matchedPairs]);
 
     return (
-        <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+        <View style={[styles.container, styles.scrollContent]}>
             {/* Top Bar */}
             <View style={styles.titleBar}>
                 <TouchableOpacity style={styles.homeButton} onPress={() => router.push('/games' as any)}>
@@ -177,7 +177,7 @@ export default function MemoryMatchScreen() {
             {/* Board */}
             <View style={styles.boardWrap}>
                 <View style={styles.boardInner}>
-                    <View style={[styles.grid, { flexWrap: 'wrap', width: cols * 90, height: rows * 90 }]}>
+                    <View style={[styles.grid, { flexWrap: 'wrap', width: cols * 70, height: rows * 70 }]}>
                         {cards.map((card, index) => (
                             <TouchableOpacity
                                 key={index}
@@ -185,7 +185,7 @@ export default function MemoryMatchScreen() {
                                 style={[
                                     styles.cardStyle,
                                     {
-                                        width: 80, height: 80,
+                                        width: 60, height: 60,
                                         backgroundColor: card.isFlipped ? '#FFF' : '#C8E6C9',
                                         borderColor: card.isWrong ? '#E53935' : (card.isHint ? '#FFD700' : (card.isFlipped ? '#E0E0E0' : '#A5D6A7')),
                                         borderWidth: card.isHint || card.isWrong ? 4 : 2,
@@ -206,7 +206,7 @@ export default function MemoryMatchScreen() {
 
             {/* Info Label */}
             <Text style={styles.infoLabel}>{infoText}</Text>
-        </ScrollView>
+        </View>
     );
 }
 
@@ -216,74 +216,74 @@ const styles = StyleSheet.create({
         backgroundColor: '#EAF7F0',
     },
     scrollContent: {
-        padding: 20,
-        paddingBottom: 40,
-        minHeight: '100%',
+        flex: 1,
+        padding: 5,
+        paddingBottom: 10,
     },
     titleBar: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        height: 60,
-        marginBottom: 10,
+        height: 50,
+        marginBottom: 5,
     },
     homeButton: {
-        width: 140,
-        height: 50,
+        width: 100,
+        height: 40,
         backgroundColor: '#A5D6A7',
         borderRadius: 8,
         justifyContent: 'center',
         alignItems: 'center',
     },
     restartButton: {
-        width: 140,
-        height: 50,
+        width: 100,
+        height: 40,
         backgroundColor: '#A5D6A7',
         borderRadius: 8,
         justifyContent: 'center',
         alignItems: 'center',
     },
     buttonText: {
-        fontSize: 20,
+        fontSize: 16,
         fontWeight: 'bold',
         color: '#2E7D32',
     },
     titleLabel: {
-        fontSize: 36,
+        fontSize: 24,
         fontWeight: 'bold',
         color: '#2E7D32',
     },
     controlsBar: {
         flexDirection: 'row',
-        height: 50,
+        height: 40,
         justifyContent: 'center',
         alignItems: 'center',
-        gap: 10,
-        marginBottom: 10,
+        gap: 8,
+        marginBottom: 5,
     },
     levelLabel: {
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: 'bold',
         color: '#2E7D32',
-        marginRight: 10,
+        marginRight: 8,
     },
     levelBtn: {
-        paddingHorizontal: 15,
-        paddingVertical: 10,
+        paddingHorizontal: 10,
+        paddingVertical: 6,
         borderRadius: 5,
     },
     levelBtnText: {
         fontWeight: 'bold',
-        fontSize: 16,
+        fontSize: 14,
     },
     progressWrap: {
-        height: 50,
+        height: 30,
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: 10,
+        marginBottom: 5,
     },
     progressText: {
-        fontSize: 24,
+        fontSize: 18,
         color: '#2E7D32',
         fontWeight: 'bold',
     },
@@ -292,8 +292,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: 'rgba(255,255,255,0.5)',
-        borderRadius: 24,
-        padding: 20,
+        borderRadius: 16,
+        padding: 10,
     },
     boardInner: {
         justifyContent: 'center',
@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     cardStyle: {
-        borderRadius: 16,
+        borderRadius: 12,
         borderWidth: 2,
         justifyContent: 'center',
         alignItems: 'center',
@@ -313,22 +313,22 @@ const styles = StyleSheet.create({
         shadowColor: '#000',
         shadowOpacity: 0.1,
         shadowRadius: 5,
-        margin: 5,
+        margin: 4,
     },
     cardIcon: {
-        fontSize: 40,
+        fontSize: 32,
     },
     cardQuestionMark: {
-        fontSize: 32,
+        fontSize: 24,
         fontWeight: 'bold',
         color: 'rgba(255,255,255,0.8)',
     },
     infoLabel: {
-        fontSize: 28,
+        fontSize: 20,
         fontWeight: 'bold',
         color: '#2E7D32',
         textAlign: 'center',
-        height: 60,
-        marginTop: 10,
+        height: 40,
+        marginTop: 5,
     }
 });

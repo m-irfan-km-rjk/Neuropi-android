@@ -98,6 +98,16 @@ export default function VisualRealLife() {
     useEffect(() => {
         if (level) {
             loadQuestion();
+            const timer = setTimeout(() => {
+                if (dropViewRef.current) {
+                    dropViewRef.current.measureInWindow((x: number, y: number, width: number, height: number) => {
+                        if (width > 0 && height > 0) {
+                            setDropZoneLayout({ x, y, width, height });
+                        }
+                    });
+                }
+            }, 500);
+            return () => clearTimeout(timer);
         }
     }, [level, qIndex]);
 
@@ -425,7 +435,7 @@ export default function VisualRealLife() {
 
     if (!level) {
         return (
-            <ScrollView contentContainerStyle={styles.menuContainer}>
+            <View style={styles.menuContainer}>
                 <View style={styles.header}>
                     <TouchableOpacity style={styles.homeBtn} onPress={() => router.push('/games' as any)}>
                         <Text style={styles.homeBtnText}>{'< Home'}</Text>
@@ -440,7 +450,7 @@ export default function VisualRealLife() {
                         <TouchableOpacity
                             key={l}
                             style={[styles.lvlBtn, { backgroundColor: '#BBDEFB' }]}
-                            onPress={() => setLevel(l)}
+                            onPress={() => { setLevel(l); setQIndex(0); }}
                         >
                             <Text style={styles.lvlBtnText}>Lvl {l}</Text>
                             <Text style={styles.lvlBtnTextDesc}>{domainLabels[l - 1]}</Text>
@@ -448,7 +458,7 @@ export default function VisualRealLife() {
                     ))}
                 </View>
 
-            </ScrollView>
+            </View>
         );
     }
 
@@ -484,14 +494,6 @@ export default function VisualRealLife() {
                         </View>
                         <View
                             style={styles.dropZoneBase}
-                            onLayout={(e) => {
-                                // measureInWindow can be more reliable than measure sometimes for global coordinates
-                                if (dropViewRef.current) {
-                                    dropViewRef.current.measureInWindow((x: number, y: number, width: number, height: number) => {
-                                        setDropZoneLayout({ x, y, width, height });
-                                    });
-                                }
-                            }}
                             ref={dropViewRef}
                         >
                             <Text style={styles.dropZoneTitle}>
@@ -509,7 +511,7 @@ export default function VisualRealLife() {
 
                         {/* Draggables */}
                         {tasks.map(task => (
-                            <DraggableItem key={task.id} task={task} onDrop={handleDrop} isMoney={questionData?.domain === "money"} isCount={questionData?.domain === "counting"} />
+                            <DraggableItem key={`${level}-${qIndex}-${task.id}`} task={task} onDrop={handleDrop} isMoney={questionData?.domain === "money"} isCount={questionData?.domain === "counting"} />
                         ))}
                     </>
                 )}
@@ -534,6 +536,7 @@ function DraggableItem({ task, onDrop, isMoney, isCount }: { task: TaskType, onD
         PanResponder.create({
             onStartShouldSetPanResponder: () => true,
             onPanResponderGrant: () => {
+                task.pan.stopAnimation();
                 task.pan.setOffset({
                     x: (task.pan.x as any)._value,
                     y: (task.pan.y as any)._value
@@ -570,25 +573,25 @@ function DraggableItem({ task, onDrop, isMoney, isCount }: { task: TaskType, onD
 }
 
 const styles = StyleSheet.create({
-    menuContainer: { flexGrow: 1, backgroundColor: '#FDFCF0', padding: 20 },
-    header: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
-    homeBtn: { backgroundColor: '#90CAF9', paddingHorizontal: 15, paddingVertical: 10, borderRadius: 10, marginRight: 15 },
-    homeBtnText: { fontSize: isTablet ? 20 : 16, fontWeight: 'bold', color: '#2C3E50' },
-    menuTitle: { fontSize: isTablet ? 42 : 28, fontWeight: 'bold', color: '#2C3E50', flexShrink: 1 },
-    menuSubtitle: { fontSize: isTablet ? 26 : 18, color: '#2C3E50', marginBottom: 20 },
+    menuContainer: { flexGrow: 1, backgroundColor: '#FDFCF0', padding: 10 },
+    header: { flexDirection: 'row', alignItems: 'center', marginBottom: 15 },
+    homeBtn: { backgroundColor: '#90CAF9', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, marginRight: 15 },
+    homeBtnText: { fontSize: isTablet ? 18 : 14, fontWeight: 'bold', color: '#2C3E50' },
+    menuTitle: { fontSize: isTablet ? 32 : 22, fontWeight: 'bold', color: '#2C3E50', flexShrink: 1 },
+    menuSubtitle: { fontSize: isTablet ? 20 : 16, color: '#2C3E50', marginBottom: 15 },
 
     lvlBox: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-    lvlBtn: { padding: 15, borderRadius: 10, alignItems: 'center', justifyContent: 'center', minWidth: isTablet ? 150 : '45%', flexGrow: 1 },
-    lvlBtnText: { fontSize: isTablet ? 24 : 18, fontWeight: 'bold' },
-    lvlBtnTextDesc: { fontSize: isTablet ? 16 : 12 },
+    lvlBtn: { padding: 12, borderRadius: 10, alignItems: 'center', justifyContent: 'center', minWidth: isTablet ? 120 : '45%', flexGrow: 1 },
+    lvlBtnText: { fontSize: isTablet ? 20 : 16, fontWeight: 'bold' },
+    lvlBtnTextDesc: { fontSize: isTablet ? 14 : 10 },
 
     gameContainer: { flex: 1, backgroundColor: '#E8F5E9' },
-    gameHeader: { height: '15%', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10 },
-    scenarioLbl: { fontSize: isTablet ? 28 : 18, fontWeight: 'bold', color: '#2C3E50', flexShrink: 1 },
+    gameHeader: { height: '12%', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10 },
+    scenarioLbl: { fontSize: isTablet ? 22 : 16, fontWeight: 'bold', color: '#2C3E50', flexShrink: 1 },
 
     middleSection: { height: '70%', position: 'relative' },
-    feedbackSection: { height: '15%', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 10 },
-    feedbackText: { fontSize: isTablet ? 36 : 22, fontWeight: 'bold', textAlign: 'center' },
+    feedbackSection: { height: '18%', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 10 },
+    feedbackText: { fontSize: isTablet ? 26 : 18, fontWeight: 'bold', textAlign: 'center' },
 
     sourceZoneBase: {
         position: 'absolute',
@@ -597,7 +600,7 @@ const styles = StyleSheet.create({
         width: '45%',
         height: '90%',
         backgroundColor: '#E8F6F3',
-        borderRadius: 15,
+        borderRadius: 12,
         borderWidth: 2,
         borderColor: '#A2D9CE',
         borderStyle: 'dashed',
@@ -610,22 +613,22 @@ const styles = StyleSheet.create({
         width: '45%',
         height: '90%',
         backgroundColor: '#F5F5F5',
-        borderRadius: 15,
+        borderRadius: 12,
         borderWidth: 2,
         borderColor: '#BDBDBD',
         borderStyle: 'dashed',
         padding: 5
     },
-    dropZoneTitle: { fontSize: isTablet ? 24 : 16, fontWeight: 'bold', color: '#666', marginBottom: 5 },
+    dropZoneTitle: { fontSize: isTablet ? 18 : 14, fontWeight: 'bold', color: '#666', marginBottom: 4 },
     dropZoneInner: { flex: 1, flexDirection: 'row', flexWrap: 'wrap', gap: 5 },
-    inZoneItem: { width: isTablet ? 80 : 50, height: isTablet ? 80 : 50, backgroundColor: '#FFF', borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+    inZoneItem: { width: isTablet ? 60 : 40, height: isTablet ? 60 : 40, backgroundColor: '#FFF', borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
     zoneImg: { width: '80%', height: '80%', resizeMode: 'contain' },
-    zoneIcon: { fontSize: isTablet ? 40 : 24 },
-    zoneText: { fontSize: isTablet ? 12 : 8, fontWeight: 'bold', color: '#333' },
+    zoneIcon: { fontSize: isTablet ? 32 : 20 },
+    zoneText: { fontSize: isTablet ? 10 : 8, fontWeight: 'bold', color: '#333' },
 
     taskBox: {
         position: 'absolute',
-        borderRadius: 15,
+        borderRadius: 12,
         padding: 2,
         elevation: 5,
         shadowColor: '#000',
@@ -636,12 +639,12 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     taskImage: { width: '80%', height: '80%', resizeMode: 'contain' },
-    taskIcon: { fontSize: isTablet ? 40 : 24 }, // Matches zoneIcon exact sizing
-    taskText: { fontSize: isTablet ? 12 : 8, fontWeight: 'bold', color: '#333', marginTop: 2, textAlign: 'center', flexShrink: 1 },
+    taskIcon: { fontSize: isTablet ? 32 : 20 }, // Matches zoneIcon exact sizing
+    taskText: { fontSize: isTablet ? 10 : 8, fontWeight: 'bold', color: '#333', marginTop: 2, textAlign: 'center', flexShrink: 1 },
 
-    tapLayout: { flex: 1, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: 15, padding: 10 },
-    tapBox: { width: isTablet ? 250 : '40%', height: isTablet ? 150 : 80, borderRadius: 15, borderWidth: 2, borderColor: '#5DADE2', alignItems: 'center', justifyContent: 'center' },
+    tapLayout: { flex: 1, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: 10, padding: 10 },
+    tapBox: { width: isTablet ? 200 : '40%', height: isTablet ? 100 : 60, borderRadius: 12, borderWidth: 2, borderColor: '#5DADE2', alignItems: 'center', justifyContent: 'center' },
     tapTouch: { width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' },
-    tapBoxText: { fontSize: isTablet ? 40 : 20, textAlign: 'center', fontWeight: 'bold', color: '#333' }
+    tapBoxText: { fontSize: isTablet ? 28 : 16, textAlign: 'center', fontWeight: 'bold', color: '#333' }
 
 });
