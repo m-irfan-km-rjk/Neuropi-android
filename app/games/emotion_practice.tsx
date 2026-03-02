@@ -5,6 +5,7 @@ import { useTensorflowModel } from 'react-native-fast-tflite';
 import { Camera, useCameraDevice, useCameraPermission, useFrameProcessor } from 'react-native-vision-camera';
 import { Worklets } from 'react-native-worklets-core';
 import { useResizePlugin } from 'vision-camera-resize-plugin';
+import { saveGameProgress } from '../../utils/storage';
 
 export default function EmotionPracticeScreen() {
     const router = useRouter();
@@ -16,6 +17,7 @@ export default function EmotionPracticeScreen() {
     const [feedbackColor, setFeedbackColor] = useState('#666666');
     const [borderColor, setBorderColor] = useState('transparent');
     const [isSuccess, setIsSuccess] = useState(false);
+    const [startTime] = useState<number>(Date.now());
 
     // Load the model
     const plugin = useTensorflowModel(require('../../assets/models/mini_xception.tflite'));
@@ -40,6 +42,19 @@ export default function EmotionPracticeScreen() {
                 setBorderColor('green');
                 setFeedback(`Perfect! You showed ${emotion}! (${Math.round(confidence * 100)}%)`);
                 setFeedbackColor('#77DD77');
+
+                const timeSpent = Math.floor((Date.now() - startTime) / 1000);
+                const score = Math.round(confidence * 100);
+                const level = emotion?.toString() || 'General';
+                // Calculate an accuracy proxy based on speed (under 5s = 100%)
+                const accuracy = Math.max(0, 100 - Math.max(0, timeSpent - 5) * 5);
+
+                saveGameProgress('emotion_practice', {
+                    level,
+                    timeSpent,
+                    accuracy,
+                    score
+                });
             }
         } else {
             setBorderColor('red');

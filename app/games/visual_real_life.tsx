@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, Image, Animated, PanResponder, Dimensions, ScrollView } from 'react-native';
+import { saveGameProgress } from '../../utils/storage';
 
 const DOMAINS = {
     counting: {
@@ -91,6 +92,8 @@ export default function VisualRealLife() {
     const [failedAttempts, setFailedAttempts] = useState(0);
     const [feedback, setFeedback] = useState("");
     const [feedbackColor, setFeedbackColor] = useState("#333");
+    const [totalFailedAttempts, setTotalFailedAttempts] = useState<number>(0);
+    const [startTime, setStartTime] = useState<number>(0);
 
     const dropViewRef = useRef<View>(null);
     const [dropZoneLayout, setDropZoneLayout] = useState<{ x: number, y: number, width: number, height: number } | null>(null);
@@ -118,6 +121,18 @@ export default function VisualRealLife() {
             setFeedbackColor("#2C3E50");
             setTasks([]);
             setDropZoneItems([]);
+
+            if (level !== null && startTime > 0) {
+                const timeSpent = Math.floor((Date.now() - startTime) / 1000);
+                const accuracy = Math.round((10 / (10 + totalFailedAttempts)) * 100);
+                saveGameProgress('visual_real_life', {
+                    level,
+                    timeSpent,
+                    accuracy,
+                    score: 10 * 10,
+                    totalMisses: totalFailedAttempts
+                });
+            }
             // Could add auto advance to next level like Kivy implementation
             return;
         }
@@ -400,6 +415,7 @@ export default function VisualRealLife() {
         setFeedback(msg);
         setFeedbackColor("#E74C3C");
         setFailedAttempts(prev => prev + 1);
+        setTotalFailedAttempts(prev => prev + 1);
 
         if (itemsInZone) {
             // Return pieces to origins
@@ -474,7 +490,7 @@ export default function VisualRealLife() {
                         <TouchableOpacity
                             key={l}
                             style={[styles.lvlBtn, { backgroundColor: '#BBDEFB' }]}
-                            onPress={() => { setLevel(l); setQIndex(0); }}
+                            onPress={() => { setLevel(l); setQIndex(0); setStartTime(Date.now()); setTotalFailedAttempts(0); }}
                         >
                             <Text style={styles.lvlBtnText}>Lvl {l}</Text>
                             <Text style={styles.lvlBtnTextDesc}>{domainLabels[l - 1]}</Text>
