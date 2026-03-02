@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, Dimensions, Animated, Easing, ScrollView } from 'react-native';
+import { Animated, Dimensions, Easing, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { saveGameProgress } from '../../utils/storage';
 
 const STAGES = {
@@ -225,7 +225,7 @@ export default function SmartBubblepop() {
         return (
             <View style={styles.menuContainer}>
                 <View style={styles.header}>
-                    <TouchableOpacity style={styles.homeBtn} onPress={() => router.push('/games' as any)}>
+                    <TouchableOpacity style={styles.homeBtn} onPress={() => router.replace('/games' as any)}>
                         <Text style={styles.homeBtnText}>{'< Home'}</Text>
                     </TouchableOpacity>
                     <Text style={styles.menuTitle}>Smart Bubble Pop</Text>

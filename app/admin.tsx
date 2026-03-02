@@ -9,7 +9,7 @@ export default function AdminScreen() {
         <View style={styles.container}>
             <View style={styles.header}>
                 <Text style={styles.headerTitle}>Manage Schedule</Text>
-                <TouchableOpacity style={styles.backButton} onPress={() => router.push('/')}>
+                <TouchableOpacity style={styles.backButton} onPress={() => router.replace('/')}>
                     <Text style={styles.backButtonText}>Back</Text>
                 </TouchableOpacity>
             </View>

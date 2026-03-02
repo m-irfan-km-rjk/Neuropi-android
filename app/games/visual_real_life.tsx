@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
-import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, Image, Animated, PanResponder, Dimensions, ScrollView } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, Dimensions, Image, PanResponder, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { saveGameProgress } from '../../utils/storage';
 
 const DOMAINS = {
@@ -473,7 +473,7 @@ export default function VisualRealLife() {
         return (
             <View style={styles.menuContainer}>
                 <View style={styles.header}>
-                    <TouchableOpacity style={styles.homeBtn} onPress={() => router.push('/games' as any)}>
+                    <TouchableOpacity style={styles.homeBtn} onPress={() => router.replace('/games' as any)}>
                         <Text style={styles.homeBtnText}>{'< Home'}</Text>
                     </TouchableOpacity>
                     <Text style={styles.menuTitle}>Visual Real-Life</Text>

@@ -1,7 +1,7 @@
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, Dimensions } from 'react-native';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const { width } = Dimensions.get('window');
 const isTablet = width > 600;
@@ -38,7 +38,7 @@ export default function DashboardScreen() {
                     <Text style={styles.clockLabel}>{time}</Text>
                     <Text style={styles.dateLabel}>{date}</Text>
                 </View>
-                <TouchableOpacity style={styles.settingsButton} onPress={() => router.push('/progress' as any)}>
+                <TouchableOpacity style={styles.settingsButton} onPress={() => router.replace('/progress' as any)}>
                     <Ionicons name="settings-sharp" size={isTablet ? 40 : 28} color="#555" />
                 </TouchableOpacity>
             </View>
@@ -69,21 +69,21 @@ export default function DashboardScreen() {
                     icon={<Ionicons name="chatbubbles" size={isTablet ? 60 : 36} color="#F57F17" />}
                     bgColor="#FFF9C4"
                     titleColor="#F57F17"
-                    onPress={() => router.push('/aac' as any)}
+                    onPress={() => router.replace('/aac' as any)}
                 />
                 <DashboardCard
                     title="Schedule"
                     icon={<Ionicons name="calendar-sharp" size={isTablet ? 60 : 36} color="#7B1FA2" />}
                     bgColor="#F3E5F5"
                     titleColor="#7B1FA2"
-                    onPress={() => router.push('/scheduler' as any)}
+                    onPress={() => router.replace('/scheduler' as any)}
                 />
                 <DashboardCard
                     title="Games"
                     icon={<Ionicons name="game-controller" size={isTablet ? 60 : 36} color="#558B2F" />}
                     bgColor="#DCEDC8"
                     titleColor="#558B2F"
-                    onPress={() => router.push('/games' as any)}
+                    onPress={() => router.replace('/games' as any)}
                 />
             </View>
         </View>

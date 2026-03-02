@@ -1,9 +1,9 @@
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, ScrollView, Dimensions, ActivityIndicator } from 'react-native';
-import { LineChart, BarChart } from 'react-native-chart-kit';
+import { ActivityIndicator, Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { BarChart, LineChart } from 'react-native-chart-kit';
 // Adjusted import path since storage.ts is now in the project root utils/
-import { getAllGameProgress, GameProgress } from '../utils/storage';
+import { GameProgress, getAllGameProgress } from '../utils/storage';
 
 const { width, height } = Dimensions.get('window');
 const isTablet = width > 600;
@@ -75,7 +75,7 @@ export default function ProgressScreen() {
     return (
         <View style={styles.container}>
             <View style={styles.header}>
-                <TouchableOpacity style={styles.backButton} onPress={() => router.push('/')}>
+                <TouchableOpacity style={styles.backButton} onPress={() => router.replace('/')}>
                     <Text style={styles.backButtonText}>{'< Home'}</Text>
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Progress Tracker</Text>

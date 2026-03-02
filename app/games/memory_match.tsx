@@ -159,7 +159,7 @@ export default function MemoryMatchScreen() {
         <View style={[styles.container, styles.scrollContent]}>
             {/* Top Bar */}
             <View style={styles.titleBar}>
-                <TouchableOpacity style={styles.homeButton} onPress={() => router.push('/games' as any)}>
+                <TouchableOpacity style={styles.homeButton} onPress={() => router.replace('/games' as any)}>
                     <Text style={styles.buttonText}>{'< Home'}</Text>
                 </TouchableOpacity>
                 <Text style={styles.titleLabel}>MEMORY MATCH</Text>

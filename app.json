@@ -24,7 +24,6 @@
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "permissions": [
-        "android.permission.CAMERA",
         "android.permission.CAMERA"
       ],
       "package": "com.anonymous.neuropi"
@@ -59,6 +58,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "68dbf57c-b358-40da-b679-c89ba636ba4c"
+      }
     }
   }
 }

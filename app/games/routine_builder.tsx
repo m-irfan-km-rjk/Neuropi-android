@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
-import React, { useState, useRef, useEffect } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, Image, Animated, PanResponder, Dimensions } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, Dimensions, Image, PanResponder, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { saveGameProgress } from '../../utils/storage';
 
 const SCENARIOS = [
@@ -300,7 +300,7 @@ export default function RoutineBuilder() {
                 <TouchableOpacity style={[styles.menuBtn, { backgroundColor: '#E53935' }]} onPress={() => { setLevel(2); setCurrentScenarioIdx(0); setCurrentStepIdx(0); setStartTime(Date.now()); setTotalGameMisses(0); }}>
                     <Text style={styles.menuBtnText}>Level 2 (Strict Rules)</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.menuBtn, { backgroundColor: '#9E9E9E' }]} onPress={() => router.push('/games' as any)}>
+                <TouchableOpacity style={[styles.menuBtn, { backgroundColor: '#9E9E9E' }]} onPress={() => router.replace('/games' as any)}>
                     <Text style={styles.menuBtnText}>{'< Back to Hub'}</Text>
                 </TouchableOpacity>
             </View>

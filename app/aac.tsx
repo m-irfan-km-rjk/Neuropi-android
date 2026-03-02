@@ -103,7 +103,7 @@ export default function AACScreen() {
             <View style={styles.sentenceBuilderBox}>
 
                 {/* Home */}
-                <TouchableOpacity style={styles.homeButton} onPress={() => router.push('/')}>
+                <TouchableOpacity style={styles.homeButton} onPress={() => router.replace('/')}>
                     <Text style={styles.homeButtonText}>🏠 Home</Text>
                 </TouchableOpacity>
 

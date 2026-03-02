@@ -19,7 +19,7 @@ export default function EmotionSelectionScreen() {
         <View style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
-                <TouchableOpacity style={styles.backButton} onPress={() => router.push('/') as any}>
+                <TouchableOpacity style={styles.backButton} onPress={() => router.replace('/') as any}>
                     <Text style={styles.backButtonText}>🏠 Home</Text>
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Emotion Exercise</Text>
@@ -36,7 +36,7 @@ export default function EmotionSelectionScreen() {
                     <TouchableOpacity
                         key={emotion.name}
                         style={[styles.card, { backgroundColor: emotion.color }]}
-                        onPress={() => router.push(`/games/emotion_practice?emotion=${emotion.name}` as any)}
+                        onPress={() => router.replace(`/games/emotion_practice?emotion=${emotion.name}` as any)}
                         activeOpacity={0.8}
                     >
                         <Text style={styles.cardEmoji}>{emotion.emoji}</Text>

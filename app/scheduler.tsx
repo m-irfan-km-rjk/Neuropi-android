@@ -45,11 +45,11 @@ export default function SchedulerScreen() {
         <View style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
-                <TouchableOpacity style={styles.homeButton} onPress={() => router.push('/')}>
+                <TouchableOpacity style={styles.homeButton} onPress={() => router.replace('/')}>
                     <Text style={styles.homeButtonText}>🏠 Home</Text>
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>My Daily Schedule</Text>
-                <TouchableOpacity style={styles.manageButton} onPress={() => router.push('/admin' as any)}>
+                <TouchableOpacity style={styles.manageButton} onPress={() => router.replace('/admin' as any)}>
                     <Text style={styles.manageButtonText}>✏️ Manage</Text>
                 </TouchableOpacity>
             </View>

@@ -17,7 +17,7 @@ export default function GamesHubScreen() {
         <View style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
-                <TouchableOpacity style={styles.backButton} onPress={() => router.push('/') as any}>
+                <TouchableOpacity style={styles.backButton} onPress={() => router.replace('/') as any}>
                     <Text style={styles.backButtonText}>{'< Home'}</Text>
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>🎮  Games</Text>
@@ -32,7 +32,7 @@ export default function GamesHubScreen() {
                         icon="😊"
                         bgColor="#E6F2FF"
                         borderColor="#AEC6CF"
-                        onPress={() => router.push('/games/emotion_selection' as any)}
+                        onPress={() => router.replace('/games/emotion_selection' as any)}
                     />
                     <GamesCard
                         title="Memory Match"
@@ -40,7 +40,7 @@ export default function GamesHubScreen() {
                         icon="🃏"
                         bgColor="#DCEDC8"
                         borderColor="#8BC34A"
-                        onPress={() => router.push('/games/memory_match' as any)}
+                        onPress={() => router.replace('/games/memory_match' as any)}
                     />
                     <GamesCard
                         title="Routine Builder"
@@ -48,7 +48,7 @@ export default function GamesHubScreen() {
                         icon="📅"
                         bgColor="#FFF9C4"
                         borderColor="#FFF176"
-                        onPress={() => router.push('/games/routine_builder' as any)}
+                        onPress={() => router.replace('/games/routine_builder' as any)}
                     />
                     <GamesCard
                         title="Smart Bubble Pop"
@@ -56,7 +56,7 @@ export default function GamesHubScreen() {
                         icon="🫧"
                         bgColor="#E8DAEF"
                         borderColor="#D2B4DE"
-                        onPress={() => router.push('/games/smart_bubble' as any)}
+                        onPress={() => router.replace('/games/smart_bubble' as any)}
                     />
                     <GamesCard
                         title="Visual Real-Life"
@@ -64,7 +64,7 @@ export default function GamesHubScreen() {
                         icon="🌍"
                         bgColor="#E3F2FD"
                         borderColor="#90CAF9"
-                        onPress={() => router.push('/games/visual_real_life' as any)}
+                        onPress={() => router.replace('/games/visual_real_life' as any)}
                     />
                 </View>
             </View>
