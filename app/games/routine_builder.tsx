@@ -75,6 +75,19 @@ export default function RoutineBuilder() {
     useEffect(() => {
         if (level) {
             loadScenario();
+            // Reliable measurement after paint
+            const timer = setTimeout(() => {
+                for (let i = 0; i < 4; i++) {
+                    if (slotRefs.current[i]) {
+                        slotRefs.current[i].measureInWindow((x: number, y: number, w: number, h: number) => {
+                            if (w > 0 && h > 0) {
+                                slotLayoutsRef.current[i] = { x, y, width: w, height: h };
+                            }
+                        });
+                    }
+                }
+            }, 500);
+            return () => clearTimeout(timer);
         }
     }, [level, currentScenarioIdx]);
 
@@ -305,13 +318,6 @@ export default function RoutineBuilder() {
                                     opacity: isCompleted ? 0.6 : (isLocked ? 0.5 : 1)
                                 }]}
                                 ref={el => { slotRefs.current[i] = el; }}
-                                onLayout={() => {
-                                    if (slotRefs.current[i]) {
-                                        slotRefs.current[i].measureInWindow((x: number, y: number, w: number, h: number) => {
-                                            slotLayoutsRef.current[i] = { x, y, width: w, height: h };
-                                        });
-                                    }
-                                }}
                             >
                                 {slots[i] ? (
                                     <>
@@ -334,7 +340,7 @@ export default function RoutineBuilder() {
 
             {/* Draggables must be rendered after all static sections so they float on top */}
             {shuffledTasks.map((task) => (
-                <DraggableItem key={task.id} task={task} onDrop={handleDrop} />
+                <DraggableItem key={`${currentScenarioIdx}-${level}-${task.id}`} task={task} onDrop={handleDrop} />
             ))}
 
             <View style={styles.feedbackSection}>
@@ -356,6 +362,7 @@ function DraggableItem({ task, onDrop }: { task: any, onDrop: (task: any, gestur
         PanResponder.create({
             onStartShouldSetPanResponder: () => true,
             onPanResponderGrant: () => {
+                task.pan.stopAnimation();
                 task.pan.setOffset({
                     x: (task.pan.x as any)._value,
                     y: (task.pan.y as any)._value

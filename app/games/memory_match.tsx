@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const SHAPES = [
     { icon: '🔴', color: '#FF8A80' },
@@ -139,7 +139,7 @@ export default function MemoryMatchScreen() {
     }, [matchedPairs]);
 
     return (
-        <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+        <View style={[styles.container, styles.scrollContent]}>
             {/* Top Bar */}
             <View style={styles.titleBar}>
                 <TouchableOpacity style={styles.homeButton} onPress={() => router.push('/games' as any)}>
@@ -177,7 +177,7 @@ export default function MemoryMatchScreen() {
             {/* Board */}
             <View style={styles.boardWrap}>
                 <View style={styles.boardInner}>
-                    <View style={[styles.grid, { flexWrap: 'wrap', width: cols * 90, height: rows * 90 }]}>
+                    <View style={[styles.grid, { flexWrap: 'wrap', width: cols * 70, height: rows * 70 }]}>
                         {cards.map((card, index) => (
                             <TouchableOpacity
                                 key={index}
@@ -185,7 +185,7 @@ export default function MemoryMatchScreen() {
                                 style={[
                                     styles.cardStyle,
                                     {
-                                        width: 80, height: 80,
+                                        width: 60, height: 60,
                                         backgroundColor: card.isFlipped ? '#FFF' : '#C8E6C9',
                                         borderColor: card.isWrong ? '#E53935' : (card.isHint ? '#FFD700' : (card.isFlipped ? '#E0E0E0' : '#A5D6A7')),
                                         borderWidth: card.isHint || card.isWrong ? 4 : 2,
@@ -206,7 +206,7 @@ export default function MemoryMatchScreen() {
 
             {/* Info Label */}
             <Text style={styles.infoLabel}>{infoText}</Text>
-        </ScrollView>
+        </View>
     );
 }
 
@@ -216,9 +216,9 @@ const styles = StyleSheet.create({
         backgroundColor: '#EAF7F0',
     },
     scrollContent: {
-        padding: 10,
-        paddingBottom: 20,
-        minHeight: '100%',
+        flex: 1,
+        padding: 5,
+        paddingBottom: 10,
     },
     titleBar: {
         flexDirection: 'row',

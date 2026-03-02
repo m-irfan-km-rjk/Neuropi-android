@@ -201,7 +201,7 @@ export default function SmartBubblepop() {
 
     if (!currentStageId) {
         return (
-            <ScrollView contentContainerStyle={styles.menuContainer}>
+            <View style={styles.menuContainer}>
                 <View style={styles.header}>
                     <TouchableOpacity style={styles.homeBtn} onPress={() => router.push('/games' as any)}>
                         <Text style={styles.homeBtnText}>{'< Home'}</Text>
@@ -222,7 +222,7 @@ export default function SmartBubblepop() {
                 <TouchableOpacity style={styles.stageBtn} onPress={() => startGame('stage3')}>
                     <Text style={styles.stageBtnText}>3. Emotion Recognition</Text>
                 </TouchableOpacity>
-            </ScrollView>
+            </View>
         );
     }
 

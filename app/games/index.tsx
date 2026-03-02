@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const GamesCard = ({ title, desc, icon, bgColor, borderColor, onPress }: any) => (
     <TouchableOpacity style={[styles.card, { backgroundColor: bgColor, borderColor: borderColor }]} onPress={onPress}>
@@ -23,7 +23,7 @@ export default function GamesHubScreen() {
                 <Text style={styles.headerTitle}>🎮  Games</Text>
             </View>
 
-            <ScrollView contentContainerStyle={styles.scrollContent}>
+            <View style={styles.scrollContent}>
                 <Text style={styles.subtitle}>Choose an activity!</Text>
                 <View style={styles.gridContainer}>
                     <GamesCard
@@ -67,7 +67,7 @@ export default function GamesHubScreen() {
                         onPress={() => router.push('/games/visual_real_life' as any)}
                     />
                 </View>
-            </ScrollView>
+            </View>
         </View>
     );
 }
@@ -116,15 +116,15 @@ const styles = StyleSheet.create({
     gridContainer: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        justifyContent: 'space-between',
-        gap: 10,
+        justifyContent: 'center',
+        gap: 15,
     },
     card: {
-        width: '48%',
-        aspectRatio: 1.2,
-        borderRadius: 16,
+        width: '30%',
+        aspectRatio: 1.8,
+        borderRadius: 12,
         borderWidth: 2,
-        padding: 10,
+        padding: 5,
         alignItems: 'center',
         justifyContent: 'center',
         elevation: 3,
@@ -134,18 +134,18 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 2 },
     },
     cardIcon: {
-        fontSize: 40,
-        marginBottom: 4,
+        fontSize: 32,
+        marginBottom: 2,
     },
     cardTitle: {
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: 'bold',
         textAlign: 'center',
         color: '#2E7D32',
         marginBottom: 2,
     },
     cardDesc: {
-        fontSize: 12,
+        fontSize: 10,
         textAlign: 'center',
         color: '#555555',
     }

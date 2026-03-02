@@ -98,6 +98,16 @@ export default function VisualRealLife() {
     useEffect(() => {
         if (level) {
             loadQuestion();
+            const timer = setTimeout(() => {
+                if (dropViewRef.current) {
+                    dropViewRef.current.measureInWindow((x: number, y: number, width: number, height: number) => {
+                        if (width > 0 && height > 0) {
+                            setDropZoneLayout({ x, y, width, height });
+                        }
+                    });
+                }
+            }, 500);
+            return () => clearTimeout(timer);
         }
     }, [level, qIndex]);
 
@@ -425,7 +435,7 @@ export default function VisualRealLife() {
 
     if (!level) {
         return (
-            <ScrollView contentContainerStyle={styles.menuContainer}>
+            <View style={styles.menuContainer}>
                 <View style={styles.header}>
                     <TouchableOpacity style={styles.homeBtn} onPress={() => router.push('/games' as any)}>
                         <Text style={styles.homeBtnText}>{'< Home'}</Text>
@@ -448,7 +458,7 @@ export default function VisualRealLife() {
                     ))}
                 </View>
 
-            </ScrollView>
+            </View>
         );
     }
 
@@ -484,14 +494,6 @@ export default function VisualRealLife() {
                         </View>
                         <View
                             style={styles.dropZoneBase}
-                            onLayout={(e) => {
-                                // measureInWindow can be more reliable than measure sometimes for global coordinates
-                                if (dropViewRef.current) {
-                                    dropViewRef.current.measureInWindow((x: number, y: number, width: number, height: number) => {
-                                        setDropZoneLayout({ x, y, width, height });
-                                    });
-                                }
-                            }}
                             ref={dropViewRef}
                         >
                             <Text style={styles.dropZoneTitle}>
@@ -509,7 +511,7 @@ export default function VisualRealLife() {
 
                         {/* Draggables */}
                         {tasks.map(task => (
-                            <DraggableItem key={task.id} task={task} onDrop={handleDrop} isMoney={questionData?.domain === "money"} isCount={questionData?.domain === "counting"} />
+                            <DraggableItem key={`${level}-${qIndex}-${task.id}`} task={task} onDrop={handleDrop} isMoney={questionData?.domain === "money"} isCount={questionData?.domain === "counting"} />
                         ))}
                     </>
                 )}
@@ -534,6 +536,7 @@ function DraggableItem({ task, onDrop, isMoney, isCount }: { task: TaskType, onD
         PanResponder.create({
             onStartShouldSetPanResponder: () => true,
             onPanResponderGrant: () => {
+                task.pan.stopAnimation();
                 task.pan.setOffset({
                     x: (task.pan.x as any)._value,
                     y: (task.pan.y as any)._value
