@@ -57,8 +57,8 @@ const styles = StyleSheet.create({
     header: {
         flexDirection: 'row',
         alignItems: 'center',
-        height: 80,
-        marginTop: 20, // safe area spacing roughly
+        height: 60,
+        marginTop: 10,
     },
     backButton: {
         width: 100,
@@ -86,24 +86,24 @@ const styles = StyleSheet.create({
     gridContainer: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        gap: 15,
+        gap: 10,
         justifyContent: 'center',
-        paddingBottom: 10,
+        paddingBottom: 5,
     },
     card: {
-        width: 140,
-        height: 140,
+        width: 110,
+        height: 110,
         borderRadius: 12,
-        padding: 10,
+        padding: 5,
         justifyContent: 'center',
         alignItems: 'center',
     },
     cardEmoji: {
-        fontSize: 50,
-        marginBottom: 10,
+        fontSize: 45,
+        marginBottom: 5,
     },
     cardTitle: {
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: 'bold',
         color: '#FFF',
     },

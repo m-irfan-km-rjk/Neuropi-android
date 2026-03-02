@@ -324,23 +324,14 @@ export default function VisualRealLife() {
         let failed = false;
         let failMsg = "❌ Try Again";
 
-        if (questionData.domain === "counting") {
-            if (newDropZoneItems.length === questionData.target_qty) success = true;
-            else if (newDropZoneItems.length > questionData.target_qty) {
-                failed = true;
-                failMsg = "❌ Too many items!";
-            } else {
-                setFeedback(`Placed ${newDropZoneItems.length}. ${questionData.target_qty - newDropZoneItems.length} more to go!`);
+        if (questionData.domain === "counting" || questionData.domain === "money") {
+            // These domains wait for the 'Done' button. We just give neutral feedback here for now.
+            if (questionData.domain === "counting") {
+                setFeedback(`Placed ${newDropZoneItems.length} items so far...`);
                 setFeedbackColor("#2980B9");
-            }
-        } else if (questionData.domain === "money") {
-            const sum = newDropZoneItems.reduce((acc, it) => acc + it.val, 0);
-            if (sum === questionData.target_val) success = true;
-            else if (sum > questionData.target_val) {
-                failed = true;
-                failMsg = "❌ Too much money!";
-            } else {
-                setFeedback(`Added Rs.${sum}. Need Rs.${questionData.target_val - sum} more!`);
+            } else if (questionData.domain === "money") {
+                const sum = newDropZoneItems.reduce((acc, it) => acc + it.val, 0);
+                setFeedback(`Added Rs.${sum} so far...`);
                 setFeedbackColor("#2980B9");
             }
         } else if (questionData.domain === "daily") {
@@ -360,6 +351,39 @@ export default function VisualRealLife() {
             setTimeout(() => {
                 wrongAction(failMsg, task, newDropZoneItems);
             }, 500);
+        }
+    };
+
+    const handleDoneVerification = () => {
+        if (!questionData || (questionData.domain !== "counting" && questionData.domain !== "money")) return;
+
+        let success = false;
+        let failMsg = "❌ Try Again";
+
+        if (questionData.domain === "counting") {
+            if (dropZoneItems.length === questionData.target_qty) success = true;
+            else if (dropZoneItems.length > questionData.target_qty) {
+                failMsg = "❌ Too many items!";
+            } else {
+                failMsg = "❌ Not enough items yet!";
+            }
+        } else if (questionData.domain === "money") {
+            const sum = dropZoneItems.reduce((acc, it) => acc + it.val, 0);
+            if (sum === questionData.target_val) success = true;
+            else if (sum > questionData.target_val) {
+                failMsg = "❌ Too much money!";
+            } else {
+                failMsg = "❌ Not enough money yet!";
+            }
+        }
+
+        if (success) {
+            correctAction();
+        } else {
+            // Revert all dropped items to give them another chance, or just empty the zone.
+            // Emptying the zone is visually consistent with the current wrongAction flow:
+            const itemsToPop = [...dropZoneItems];
+            wrongAction(failMsg, itemsToPop[0], itemsToPop); // Fallback to animating the first item
         }
     };
 
@@ -468,9 +492,19 @@ export default function VisualRealLife() {
                 <TouchableOpacity style={styles.homeBtn} onPress={() => setLevel(null)}>
                     <Text style={styles.homeBtnText}>{'< Menu'}</Text>
                 </TouchableOpacity>
-                <Text style={styles.scenarioLbl}>
-                    [{Math.min(qIndex + 1, 10)}/10] Lvl {level}:   {questionData?.instruction}
-                </Text>
+                <View style={{ flex: 1, alignItems: 'center', marginRight: 60 }}>
+                    {questionData?.type === "tap" ? (
+                        <Text style={styles.scenarioLbl}>
+                            [{Math.min(qIndex + 1, 10)}/10] Lvl {level}:
+                            <Text style={{ fontSize: isTablet ? 42 : 36, lineHeight: isTablet ? 50 : 40 }}> {questionData?.instruction.replace("What to do? ", "")} </Text>
+                            ?
+                        </Text>
+                    ) : (
+                        <Text style={styles.scenarioLbl}>
+                            [{Math.min(qIndex + 1, 10)}/10] Lvl {level}:   {questionData?.instruction}
+                        </Text>
+                    )}
+                </View>
             </View>
 
             <View style={styles.middleSection}>
@@ -508,6 +542,12 @@ export default function VisualRealLife() {
                                 ))}
                             </View>
                         </View>
+
+                        {(questionData?.domain === "counting" || questionData?.domain === "money") && (
+                            <TouchableOpacity style={styles.doneBtnBase} onPress={handleDoneVerification}>
+                                <Text style={styles.doneBtnText}>DONE ✔</Text>
+                            </TouchableOpacity>
+                        )}
 
                         {/* Draggables */}
                         {tasks.map(task => (
@@ -587,7 +627,7 @@ const styles = StyleSheet.create({
 
     gameContainer: { flex: 1, backgroundColor: '#E8F5E9' },
     gameHeader: { height: '12%', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10 },
-    scenarioLbl: { fontSize: isTablet ? 22 : 16, fontWeight: 'bold', color: '#2C3E50', flexShrink: 1 },
+    scenarioLbl: { fontSize: isTablet ? 22 : 18, fontWeight: 'bold', color: '#2C3E50', textAlign: 'center' },
 
     middleSection: { height: '70%', position: 'relative' },
     feedbackSection: { height: '18%', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 10 },
@@ -621,6 +661,26 @@ const styles = StyleSheet.create({
     },
     dropZoneTitle: { fontSize: isTablet ? 18 : 14, fontWeight: 'bold', color: '#666', marginBottom: 4 },
     dropZoneInner: { flex: 1, flexDirection: 'row', flexWrap: 'wrap', gap: 5 },
+    doneBtnBase: {
+        position: 'absolute',
+        right: '2%',
+        bottom: '5%',
+        width: '45%',
+        backgroundColor: '#4CAF50',
+        paddingVertical: 10,
+        borderRadius: 8,
+        alignItems: 'center',
+        elevation: 3,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 3,
+    },
+    doneBtnText: {
+        color: '#FFF',
+        fontWeight: 'bold',
+        fontSize: isTablet ? 20 : 16,
+    },
     inZoneItem: { width: isTablet ? 60 : 40, height: isTablet ? 60 : 40, backgroundColor: '#FFF', borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
     zoneImg: { width: '80%', height: '80%', resizeMode: 'contain' },
     zoneIcon: { fontSize: isTablet ? 32 : 20 },
@@ -642,9 +702,9 @@ const styles = StyleSheet.create({
     taskIcon: { fontSize: isTablet ? 32 : 20 }, // Matches zoneIcon exact sizing
     taskText: { fontSize: isTablet ? 10 : 8, fontWeight: 'bold', color: '#333', marginTop: 2, textAlign: 'center', flexShrink: 1 },
 
-    tapLayout: { flex: 1, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: 10, padding: 10 },
-    tapBox: { width: isTablet ? 200 : '40%', height: isTablet ? 100 : 60, borderRadius: 12, borderWidth: 2, borderColor: '#5DADE2', alignItems: 'center', justifyContent: 'center' },
-    tapTouch: { width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' },
-    tapBoxText: { fontSize: isTablet ? 28 : 16, textAlign: 'center', fontWeight: 'bold', color: '#333' }
+    tapLayout: { flex: 1, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', alignContent: 'center', gap: 15, padding: 20 },
+    tapBox: { width: isTablet ? 200 : '42%', minHeight: isTablet ? 100 : 80, borderRadius: 12, borderWidth: 2, borderColor: '#5DADE2', backgroundColor: '#FFF' },
+    tapTouch: { flex: 1, width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center', padding: 10 },
+    tapBoxText: { fontSize: isTablet ? 28 : 22, textAlign: 'center', fontWeight: 'bold', color: '#333' }
 
 });

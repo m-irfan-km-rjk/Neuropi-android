@@ -116,6 +116,7 @@ export default function RoutineBuilder() {
 
         const tasksWithPos = steps.map((s, i) => ({
             ...s,
+            id: `task-${Date.now()}-${Math.random()}-${i}`,
             initialPos: positions[i],
             pan: new Animated.ValueXY(positions[i]),
             val: new Animated.Value(0), // for glow
@@ -339,8 +340,12 @@ export default function RoutineBuilder() {
             </View>
 
             {/* Draggables must be rendered after all static sections so they float on top */}
-            {shuffledTasks.map((task) => (
-                <DraggableItem key={`${currentScenarioIdx}-${level}-${task.id}`} task={task} onDrop={handleDrop} />
+            {shuffledTasks.map((task, i) => (
+                <DraggableItem
+                    key={task.id}
+                    task={task}
+                    onDrop={handleDrop}
+                />
             ))}
 
             <View style={styles.feedbackSection}>
