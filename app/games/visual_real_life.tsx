@@ -141,14 +141,10 @@ export default function VisualRealLife() {
             while (opt1 === opt2) {
                 opt2 = Math.floor(Math.random() * 5) + 1;
             }
-            if (isMore && opt1 > opt2) {
-                const temp = opt1; opt1 = opt2; opt2 = temp;
-            } else if (!isMore && opt1 < opt2) {
-                const temp = opt1; opt1 = opt2; opt2 = temp;
-            }
             const item = DOMAINS.comparison.items[Math.floor(Math.random() * DOMAINS.comparison.items.length)];
             const opts = [item.icon.repeat(opt1), item.icon.repeat(opt2)];
-            const correct = isMore ? opts[1] : opts[0];
+            const correctAmount = isMore ? Math.max(opt1, opt2) : Math.min(opt1, opt2);
+            const correct = item.icon.repeat(correctAmount);
             data = { type: "tap", domain: qDomain, instruction: `Tap the box with ${isMore ? 'MORE' : 'LESS'}`, options: opts, correct };
         } else if (qDomain === "money") {
             const item = DOMAINS.money.items[Math.floor(Math.random() * DOMAINS.money.items.length)];
