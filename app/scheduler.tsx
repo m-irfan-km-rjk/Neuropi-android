@@ -1,19 +1,24 @@
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-
-// Simulated DB of events
-const initialEvents = [
-    { id: '1', title: 'Breakfast', icon: '🍞', startTime: '08:00', endTime: '08:30' },
-    { id: '2', title: 'School Bus', icon: '🚌', startTime: '08:30', endTime: '09:00' },
-    { id: '3', title: 'Class', icon: '🏫', startTime: '09:00', endTime: '12:00' },
-    { id: '4', title: 'Lunch', icon: '🍎', startTime: '12:00', endTime: '13:00' },
-];
+import { ScheduleEvent, getSchedule } from '../utils/scheduleStorage';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function SchedulerScreen() {
     const router = useRouter();
-    const [events, setEvents] = useState(initialEvents);
+    const [events, setEvents] = useState<ScheduleEvent[]>([]);
     const [nowStr, setNowStr] = useState('');
+
+    useFocusEffect(
+        React.useCallback(() => {
+            loadEvents();
+        }, [])
+    );
+
+    const loadEvents = async () => {
+        const storedEvents = await getSchedule();
+        setEvents(storedEvents);
+    };
 
     // Update current time to determine what's "NOW" and "DONE"
     useEffect(() => {
@@ -56,49 +61,53 @@ export default function SchedulerScreen() {
 
             {/* Timeline */}
             <ScrollView contentContainerStyle={styles.timelineList}>
-                {events.map((ev) => {
-                    const startM = parseHM(ev.startTime);
-                    const endM = parseHM(ev.endTime);
-                    const currentM = getCurrentTimeParsed();
+                {events.length === 0 ? (
+                    <Text style={{ textAlign: 'center', fontSize: 18, color: '#666' }}>No current schedule. Add some tasks in Manage.</Text>
+                ) : (
+                    events.map((ev) => {
+                        const startM = parseHM(ev.startTime);
+                        const endM = parseHM(ev.endTime);
+                        const currentM = getCurrentTimeParsed();
 
-                    const isPast = endM < currentM;
-                    const isCurrent = startM <= currentM && currentM <= endM;
+                        const isPast = endM < currentM;
+                        const isCurrent = startM <= currentM && currentM <= endM;
 
-                    const bgHex = isCurrent ? '#E8F5E9' : '#FFFFFF';
-                    const borderColor = isCurrent ? '#4CAF50' : 'transparent';
+                        const bgHex = isCurrent ? '#E8F5E9' : '#FFFFFF';
+                        const borderColor = isCurrent ? '#4CAF50' : 'transparent';
 
-                    const { time: startT, ampm: startAmpm } = formatAMPM(ev.startTime);
-                    const { time: endT, ampm: endAmpm } = formatAMPM(ev.endTime);
+                        const { time: startT, ampm: startAmpm } = formatAMPM(ev.startTime);
+                        const { time: endT, ampm: endAmpm } = formatAMPM(ev.endTime);
 
-                    let titleText = ev.title;
-                    if (isCurrent) titleText += ' (NOW)';
-                    else if (isPast) titleText += ' (DONE)';
+                        let titleText = ev.title;
+                        if (isCurrent) titleText += ' (NOW)';
+                        else if (isPast) titleText += ' (DONE)';
 
-                    return (
-                        <View
-                            key={ev.id}
-                            style={[
-                                styles.card,
-                                { backgroundColor: bgHex, borderColor, borderWidth: isCurrent ? 2 : 0, opacity: isPast ? 0.6 : 1.0 }
-                            ]}
-                        >
-                            <View style={styles.timeBox}>
-                                <Text style={styles.timeText}>{startT}</Text>
-                                <Text style={styles.ampmText}>{startAmpm}</Text>
+                        return (
+                            <View
+                                key={ev.id}
+                                style={[
+                                    styles.card,
+                                    { backgroundColor: bgHex, borderColor, borderWidth: isCurrent ? 2 : 0, opacity: isPast ? 0.6 : 1.0 }
+                                ]}
+                            >
+                                <View style={styles.timeBox}>
+                                    <Text style={styles.timeText}>{startT}</Text>
+                                    <Text style={styles.ampmText}>{startAmpm}</Text>
+                                </View>
+
+                                <View style={styles.iconBox}>
+                                    <Text style={styles.iconEmj}>{ev.icon}</Text>
+                                </View>
+
+                                <View style={styles.infoBox}>
+                                    <Text style={styles.titleText}>{titleText}</Text>
+                                    <Text style={styles.untilText}>Until {endT} {endAmpm}</Text>
+                                </View>
+
                             </View>
-
-                            <View style={styles.iconBox}>
-                                <Text style={styles.iconEmj}>{ev.icon}</Text>
-                            </View>
-
-                            <View style={styles.infoBox}>
-                                <Text style={styles.titleText}>{titleText}</Text>
-                                <Text style={styles.untilText}>Until {endT} {endAmpm}</Text>
-                            </View>
-
-                        </View>
-                    );
-                })}
+                        );
+                    })
+                )}
             </ScrollView>
         </View>
     );

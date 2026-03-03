@@ -2,6 +2,8 @@ import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import { ScheduleEvent, getSchedule } from '../utils/scheduleStorage';
 
 const { width } = Dimensions.get('window');
 const isTablet = width > 600;
@@ -18,6 +20,45 @@ export default function DashboardScreen() {
 
     const [time, setTime] = useState('');
     const [date, setDate] = useState('');
+    const [nowTask, setNowTask] = useState<ScheduleEvent | null>(null);
+    const [nextTask, setNextTask] = useState<ScheduleEvent | null>(null);
+
+    const parseHM = (timeStr: string) => {
+        const [h, m] = timeStr.split(':');
+        return parseInt(h) * 60 + parseInt(m);
+    };
+
+    const loadScheduleAndUpdateTasks = async () => {
+        const events = await getSchedule();
+        const d = new Date();
+        const currentM = d.getHours() * 60 + d.getMinutes();
+
+        let currentActiveTask: ScheduleEvent | null = null;
+        let upcomingTask: ScheduleEvent | null = null;
+
+        for (const ev of events) {
+            const startM = parseHM(ev.startTime);
+            const endM = parseHM(ev.endTime);
+
+            if (startM <= currentM && currentM <= endM) {
+                currentActiveTask = ev;
+            } else if (startM > currentM) {
+                // Assuming events are sorted, the first one in the future is the next task
+                if (!upcomingTask || startM < parseHM(upcomingTask.startTime)) {
+                    upcomingTask = ev;
+                }
+            }
+        }
+
+        setNowTask(currentActiveTask);
+        setNextTask(upcomingTask);
+    };
+
+    useFocusEffect(
+        React.useCallback(() => {
+            loadScheduleAndUpdateTasks();
+        }, [])
+    );
 
     useEffect(() => {
         const updateTime = () => {
@@ -26,7 +67,13 @@ export default function DashboardScreen() {
             setDate(now.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' }));
         };
         updateTime();
-        const interval = setInterval(updateTime, 1000);
+        const interval = setInterval(() => {
+            updateTime();
+            // Re-evaluate NOW/NEXT every minute
+            if (new Date().getSeconds() === 0) {
+                loadScheduleAndUpdateTasks();
+            }
+        }, 1000);
         return () => clearInterval(interval);
     }, []);
 
@@ -47,18 +94,36 @@ export default function DashboardScreen() {
             <View style={styles.nowNextContainer}>
                 <View style={[styles.nowNextCard, { backgroundColor: '#E8F5E9', borderColor: '#81C784' }]}>
                     <Text style={[styles.cardHeaderLabel, { color: '#2E7D32' }]}>NOW</Text>
-                    <View style={styles.iconContainer}>
-                        <MaterialIcons name="location-on" size={isTablet ? 80 : 45} color="#2E7D32" />
-                    </View>
-                    <Text style={styles.largeTitle}>Free Time</Text>
+                    {nowTask ? (
+                        <>
+                            <Text style={{ fontSize: isTablet ? 80 : 45 }}>{nowTask.icon}</Text>
+                            <Text style={styles.largeTitle} numberOfLines={1}>{nowTask.title}</Text>
+                        </>
+                    ) : (
+                        <>
+                            <View style={styles.iconContainer}>
+                                <MaterialIcons name="location-on" size={isTablet ? 80 : 45} color="#2E7D32" />
+                            </View>
+                            <Text style={styles.largeTitle}>Free Time</Text>
+                        </>
+                    )}
                 </View>
 
                 <View style={[styles.nowNextCard, { backgroundColor: '#E3F2FD', borderColor: '#64B5F6' }]}>
                     <Text style={[styles.cardHeaderLabel, { color: '#1565C0' }]}>NEXT</Text>
-                    <View style={styles.iconContainer}>
-                        <MaterialIcons name="arrow-forward" size={isTablet ? 80 : 45} color="#1565C0" />
-                    </View>
-                    <Text style={styles.largeTitle}>All Done!</Text>
+                    {nextTask ? (
+                        <>
+                            <Text style={{ fontSize: isTablet ? 80 : 45 }}>{nextTask.icon}</Text>
+                            <Text style={styles.largeTitle} numberOfLines={1}>{nextTask.title}</Text>
+                        </>
+                    ) : (
+                        <>
+                            <View style={styles.iconContainer}>
+                                <MaterialIcons name="arrow-forward" size={isTablet ? 80 : 45} color="#1565C0" />
+                            </View>
+                            <Text style={styles.largeTitle}>All Done!</Text>
+                        </>
+                    )}
                 </View>
             </View>
 
