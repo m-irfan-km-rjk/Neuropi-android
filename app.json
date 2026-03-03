@@ -11,8 +11,10 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSCameraUsageDescription": "Allow Neuropi to access your camera."
-      }
+        "NSCameraUsageDescription": "Allow Neuropi to access your camera.",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "bundleIdentifier": "com.anonymous.neuropi"
     },
     "android": {
       "adaptiveIcon": {
@@ -50,7 +52,8 @@
         "react-native-vision-camera",
         {
           "cameraPermissionText": "Allow Neuropi to access your camera.",
-          "enableCodeScanner": false
+          "enableCodeScanner": false,
+          "enableFrameProcessors": true
         }
       ],
       "react-native-fast-tflite"
