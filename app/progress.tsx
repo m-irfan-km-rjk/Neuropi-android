@@ -21,7 +21,7 @@ export default function ProgressScreen() {
     const [loading, setLoading] = useState(true);
     const [progressData, setProgressData] = useState<Record<string, GameProgress>>({});
     const [selectedGame, setSelectedGame] = useState<string>('memory_match');
-    const [selectedLevel, setSelectedLevel] = useState<string>('All');
+    const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
     useEffect(() => {
@@ -41,11 +41,18 @@ export default function ProgressScreen() {
 
     const currentGameData = progressData[selectedGame]?.history || [];
 
-    const availableLevels = ['All', ...Array.from(new Set(currentGameData.map(d => String(d.level || 'General'))))].sort();
+    const availableLevels = Array.from(new Set(currentGameData.map(d => String(d.level || 'General')))).sort((a, b) => {
+        const numA = parseInt(a.replace(/\D/g, '')) || 0;
+        const numB = parseInt(b.replace(/\D/g, '')) || 0;
+        if (numA !== numB) return numA - numB;
+        return a.localeCompare(b);
+    });
 
-    const filteredData = selectedLevel === 'All'
-        ? currentGameData
-        : currentGameData.filter(d => String(d.level || 'General') === selectedLevel);
+    const activeLevel = (selectedLevel && availableLevels.includes(selectedLevel)) ? selectedLevel : (availableLevels[0] || null);
+
+    const filteredData = activeLevel
+        ? currentGameData.filter(d => String(d.level || 'General') === activeLevel)
+        : [];
 
     const recentPlays = filteredData.slice(-7);
 
@@ -104,7 +111,6 @@ export default function ProgressScreen() {
                                     style={[styles.tabButton, selectedGame === game.id && styles.tabButtonActive]}
                                     onPress={() => {
                                         setSelectedGame(game.id);
-                                        setSelectedLevel('All');
                                     }}
                                 >
                                     <Text style={[styles.tabText, selectedGame === game.id && styles.tabTextActive]}>
@@ -121,17 +127,17 @@ export default function ProgressScreen() {
                                 {GAMES.find(g => g.id === selectedGame)?.title} Analytics
                             </Text>
 
-                            {availableLevels.length > 1 && (
+                            {availableLevels.length > 0 && (
                                 <View style={styles.levelFilter}>
                                     <Text style={styles.filterLabel}>Filter by:</Text>
                                     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.levelScroll}>
                                         {availableLevels.map(lvl => (
                                             <TouchableOpacity
                                                 key={lvl}
-                                                style={[styles.levelBtn, selectedLevel === lvl && styles.levelBtnActive]}
+                                                style={[styles.levelBtn, activeLevel === lvl && styles.levelBtnActive]}
                                                 onPress={() => setSelectedLevel(lvl)}
                                             >
-                                                <Text style={[styles.levelBtnText, selectedLevel === lvl && styles.levelBtnTextActive]}>
+                                                <Text style={[styles.levelBtnText, activeLevel === lvl && styles.levelBtnTextActive]}>
                                                     {String(lvl).replace('stage', 'Stage ')}
                                                 </Text>
                                             </TouchableOpacity>
@@ -139,6 +145,7 @@ export default function ProgressScreen() {
                                     </ScrollView>
                                 </View>
                             )}
+
                         </View>
 
                         {recentPlays.length === 0 ? (
