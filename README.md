@@ -1,50 +1,52 @@
-# Welcome to your Expo app 👋
+# Neuropi-Android
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+**Neuropi-Android** is a unified assistive software platform architected to provide accessible digital tools for autistic children[cite: 1, 2]. The application prioritizes specialized UI/UX design and user-centric problem-solving to facilitate communication, routine tracking, and social-analytical development[cite: 1, 2].
 
-## Get started
+---
 
-1. Install dependencies
+## ✨ Key Features
 
+*   **AAC Interface:** An Augmentative and Alternative Communication interface providing visual aids to help children communicate effectively[cite: 2].
+*   **Interactive Schedulers:** Visual tools designed to aid in routine tracking and daily management[cite: 2].
+*   **Specialized Educational Games:** Games featuring complex backend logic aimed at fostering emotional, social, and analytical skill development[cite: 2].
+    *   **Emotion Practice & Selection:** Modules to help recognize and express feelings[cite: 2].
+    *   **Memory Match & Smart Bubble:** Cognitive exercises designed for engagement[cite: 2].
+    *   **Routine Builder:** Interactive logic to help establish daily habits[cite: 2].
+*   **Progress Monitoring:** Dedicated admin tools to track and analyze developmental growth[cite: 2].
+
+---
+
+## 🚀 Proposal for Collaboration
+
+Hi **@m-irfan-km-rjk**,
+
+I have reviewed the **m-irfan-km-rjk/neuropi-android** repository and am impressed by the mission to create accessible technology for autistic children[cite: 2]. I am a developer with technical proficiency in **Java, Python, Flutter, and React.js**, and I would like to contribute to this project as a **collaborator**[cite: 1].
+
+### 🛠 Proposed Contributions
+*   **Feature Enhancement:** Expanding the educational game suite with new interactive logic and levels[cite: 1, 2].
+*   **Technical Refinement:** Refactoring existing TypeScript and React Native components for improved performance and maintainability[cite: 1, 2].
+*   **Data Insights:** Utilizing my skills in **ML & Data Tools (NumPy, Pandas)** to provide analytical insights into user progress[cite: 1].
+*   **Multilingual Support:** Assisting with localization, as I am proficient in **English, Hindi, Malayalam, and Tamil**[cite: 1].
+
+---
+
+## 🏗 Technical Stack
+
+*   **Framework:** React Native / Expo[cite: 2]
+*   **Language:** TypeScript[cite: 2]
+*   **Routing:** Expo Router[cite: 2]
+*   **State Management:** Custom storage utilities and React Hooks[cite: 2]
+*   **Styling:** Themed components for high-accessibility UI/UX[cite: 2]
+
+---
+
+## 🛠 Getting Started
+
+### Prerequisites
+*   Node.js (LTS)
+*   Expo Go app (for mobile testing) or an Android Emulator
+
+### Installation
+1. **Clone the repository:**
    ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+   git clone [https://github.com/m-irfan-km-rjk/Neuropi-android.git](https://github.com/m-irfan-km-rjk/Neuropi-android.git)
